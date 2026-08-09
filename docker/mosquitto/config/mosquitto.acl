@@ -1,0 +1,16 @@
+# RakshaSphere Mosquitto Access Control List (ACL)
+# Restricts device and service topic access per client authorization identity
+
+# Global Admin / Backend Service Permissions
+user admin
+topic readwrite #
+topic readwrite rakshasphere/#
+
+# Device Pattern Policy: Restricted to individual device sub-hierarchy
+user esp32_gateway_01
+topic write rakshasphere/devices/ESP32-GW-89A02/telemetry
+topic write rakshasphere/devices/ESP32-GW-89A02/status
+topic read rakshasphere/devices/ESP32-GW-89A02/commands
+
+# Generic IoT Edge Pattern Rule (Pattern matching)
+pattern readwrite rakshasphere/devices/%u/#

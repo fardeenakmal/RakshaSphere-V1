@@ -1,0 +1,17 @@
+{
+  "deviceId": "EDGE-GATEWAY-01",
+  "deviceName": "Industrial Edge Sensor Gateway 01",
+  "macAddress": "00:1A:2B:3C:4D:5E",
+  "deviceModel": "Raspberry Pi 4 Model B (Simulated)",
+  "firmwareVersion": "v1.2.4-raksha",
+  "mqttBrokerHost": "localhost",
+  "mqttPort": 1883,
+  "backendApiUrl": "http://localhost:8080/api/v1",
+  "heartbeatIntervalSec": 10,
+  "telemetryIntervalSec": 15,
+  "anomalyThresholds": {
+    "maxSocketsThreshold": 100,
+    "maxCpuPctThreshold": 90.0,
+    "unauthorizedPorts": [23, 445]
+  }
+}

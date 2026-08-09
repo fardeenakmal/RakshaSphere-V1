@@ -1,0 +1,50 @@
+# Environment & Secret files
+.env
+.env.local
+.env.*.local
+*.env
+
+# Build Output & Dependencies
+target/
+.next/
+node_modules/
+out/
+build/
+dist/
+*.jar
+*.war
+*.ear
+*.so
+*.dll
+*.dylib
+
+# Database & Persistent Volumes
+docker/mysql-data/
+docker/redis-data/
+docker/logs/
+*.db
+*.sqlite
+
+# IDE & Editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+*.log
+
+# Temp & Artifacts
+tmp/
+.gemini/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Large data and models
+ai-engine/models/
+
+# Backend
+apache-maven-*/
+

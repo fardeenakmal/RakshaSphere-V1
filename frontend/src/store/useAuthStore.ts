@@ -1,0 +1,65 @@
+import { create } from 'zustand';
+import { type User, type UserRole } from '@/types';
+import { apiService } from '@/services/api';
+
+interface AuthState {
+  currentUser: User | null;
+  token: string | null;
+  isAuthenticated: boolean;
+  loginAsync: (username: string, password: string) => Promise<boolean>;
+  logout: () => void;
+}
+
+export const useAuthStore = create<AuthState>((set) => ({
+  currentUser: null,
+  token: typeof window !== 'undefined' ? localStorage.getItem('rakshasphere_token') : null,
+  isAuthenticated: false,
+
+  loginAsync: async (username: string, password: string) => {
+    try {
+      const res = await apiService.login(username, password);
+      const token = res.token || res.jwt;
+
+      if (!token) {
+        throw new Error('Authentication failed: Invalid credentials');
+      }
+
+      const roleEnum = (res.role as UserRole) || 'ROLE_ADMIN';
+
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('rakshasphere_token', token);
+      }
+
+      set({
+        currentUser: {
+          id: `USR-${res.userId || '101'}`,
+          username: res.username || username,
+          name: res.name || (res.username || username).toUpperCase(),
+          email: res.email || `${res.username || username}@rakshasphere.internal`,
+          role: roleEnum,
+          avatar: res.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
+        },
+        token,
+        isAuthenticated: true
+      });
+      return true;
+    } catch (err: any) {
+      set({
+        currentUser: null,
+        token: null,
+        isAuthenticated: false
+      });
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('rakshasphere_token');
+      }
+      throw new Error(err.message || 'Invalid username or password');
+    }
+  },
+
+  logout: () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('rakshasphere_token');
+    }
+    set({ currentUser: null, token: null, isAuthenticated: false });
+  }
+}));
