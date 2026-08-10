@@ -92,6 +92,55 @@ public class UserController {
         return ResponseEntity.ok(ApiResponseDTO.success("User role updated successfully", updated));
     }
 
+    @GetMapping("/pending")
+    public ResponseEntity<ApiResponseDTO<List<User>>> getPendingUsers() {
+        List<User> pendingUsers = userRepository.findAll().stream()
+                .filter(u -> u.getStatus() == com.rakshasphere.model.entity.UserStatus.PENDING)
+                .toList();
+        return ResponseEntity.ok(ApiResponseDTO.success("Pending access requests retrieved", pendingUsers));
+    }
+
+    @PutMapping("/{id}/approve")
+    public ResponseEntity<ApiResponseDTO<User>> approveUser(@PathVariable Long id, @RequestBody(required = false) Map<String, String> payload) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + id));
+
+        user.setStatus(com.rakshasphere.model.entity.UserStatus.ACTIVE);
+
+        if (payload != null && payload.containsKey("role") && !payload.get("role").isBlank()) {
+            String rawRole = payload.get("role");
+            try {
+                UserRole newRole = UserRole.valueOf(rawRole.startsWith("ROLE_") ? rawRole : "ROLE_" + rawRole);
+                user.setRole(newRole);
+            } catch (IllegalArgumentException ignored) {
+            }
+        }
+
+        User updated = userRepository.save(user);
+        return ResponseEntity.ok(ApiResponseDTO.success("User account approved and activated successfully", updated));
+    }
+
+    @PutMapping("/{id}/status")
+    public ResponseEntity<ApiResponseDTO<User>> updateUserStatus(@PathVariable Long id, @RequestBody Map<String, String> payload) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with id: " + id));
+
+        String rawStatus = payload.get("status");
+        if (rawStatus == null || rawStatus.isBlank()) {
+            return ResponseEntity.badRequest().body(ApiResponseDTO.error("Status is required"));
+        }
+
+        try {
+            com.rakshasphere.model.entity.UserStatus newStatus = com.rakshasphere.model.entity.UserStatus.valueOf(rawStatus.toUpperCase());
+            user.setStatus(newStatus);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(ApiResponseDTO.error("Invalid status: " + rawStatus));
+        }
+
+        User updated = userRepository.save(user);
+        return ResponseEntity.ok(ApiResponseDTO.success("User account status updated successfully", updated));
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponseDTO<Void>> deleteUser(@PathVariable Long id) {
         if (!userRepository.existsById(id)) {

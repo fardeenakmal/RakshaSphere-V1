@@ -220,9 +220,12 @@ export default function SettingsPage() {
       {/* Tab 2: Users RBAC */}
       {activeTab === 'USERS' && (
         <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-4 font-mono text-xs">
-          <h3 className="font-bold text-sm text-slate-100 border-b border-slate-800 pb-2">
-            ENTERPRISE USER ACCOUNTS & RBAC ROLES
-          </h3>
+          <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+            <h3 className="font-bold text-sm text-slate-100">
+              ENTERPRISE USER ACCOUNTS & ACCESS APPROVALS
+            </h3>
+            <span className="text-[10px] text-slate-400">Total Registered Users: {users.length}</span>
+          </div>
 
           <div className="overflow-x-auto">
             <table className="w-full text-left">
@@ -230,29 +233,108 @@ export default function SettingsPage() {
                 <tr>
                   <th className="p-3">User</th>
                   <th className="p-3">Email</th>
-                  <th className="p-3">Assigned Role</th>
-                  <th className="p-3 text-right">Status</th>
+                  <th className="p-3">Role</th>
+                  <th className="p-3">Status</th>
+                  <th className="p-3 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800">
-                {DEMO_USERS.map((u) => (
-                  <tr key={u.id}>
-                    <td className="p-3 flex items-center gap-3">
-                      <img src={u.avatar} alt={u.name} className="w-8 h-8 rounded-full border border-slate-700" />
-                      <div>
-                        <div className="font-bold text-slate-200">{u.name}</div>
-                        <div className="text-[10px] text-slate-500">@{u.username}</div>
-                      </div>
-                    </td>
-                    <td className="p-3 text-slate-300">{u.email}</td>
-                    <td className="p-3">
-                      <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-bold border border-emerald-500/30">
-                        {u.role}
-                      </span>
-                    </td>
-                    <td className="p-3 text-right text-emerald-400 font-bold">ACTIVE</td>
-                  </tr>
-                ))}
+                {users.map((u) => {
+                  const statusStr = u.status || 'ACTIVE';
+                  const isPending = statusStr === 'PENDING';
+                  const isDisabled = statusStr === 'DISABLED';
+
+                  return (
+                    <tr key={u.id || u.username}>
+                      <td className="p-3 flex items-center gap-3">
+                        <img src={u.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'} alt={u.name} className="w-8 h-8 rounded-full border border-slate-700 object-cover" />
+                        <div>
+                          <div className="font-bold text-slate-200">{u.name}</div>
+                          <div className="text-[10px] text-slate-500">@{u.username}</div>
+                        </div>
+                      </td>
+                      <td className="p-3 text-slate-300">{u.email}</td>
+                      <td className="p-3">
+                        <select
+                          value={u.role}
+                          onChange={async (e) => {
+                            const newRole = e.target.value;
+                            try {
+                              await apiService.updateUserRole(u.id, newRole);
+                              setUsers(users.map(item => item.id === u.id ? { ...item, role: newRole } : item));
+                            } catch (err: any) {
+                              setErrorMessage(err.message || 'Failed to update user role');
+                            }
+                          }}
+                          className="bg-slate-950 border border-slate-800 rounded px-2 py-1 text-[11px] text-emerald-400 font-bold focus:outline-none"
+                        >
+                          <option value="ROLE_ADMIN">ROLE_ADMIN</option>
+                          <option value="ROLE_SOC_ANALYST">ROLE_SOC_ANALYST</option>
+                          <option value="ROLE_USER">ROLE_USER</option>
+                        </select>
+                      </td>
+                      <td className="p-3">
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${
+                          isPending
+                            ? 'bg-amber-500/10 text-amber-400 border-amber-500/30 animate-pulse'
+                            : isDisabled
+                            ? 'bg-red-500/10 text-red-400 border-red-500/30'
+                            : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                        }`}>
+                          {statusStr}
+                        </span>
+                      </td>
+                      <td className="p-3 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          {isPending && (
+                            <button
+                              onClick={async () => {
+                                try {
+                                  await apiService.approveUser(u.id);
+                                  setUsers(users.map(item => item.id === u.id ? { ...item, status: 'ACTIVE' } : item));
+                                } catch (err: any) {
+                                  setErrorMessage(err.message || 'Failed to approve user');
+                                }
+                              }}
+                              className="px-2.5 py-1 rounded bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-bold"
+                            >
+                              Approve
+                            </button>
+                          )}
+                          {!isDisabled ? (
+                            <button
+                              onClick={async () => {
+                                try {
+                                  await apiService.updateUserStatus(u.id, 'DISABLED');
+                                  setUsers(users.map(item => item.id === u.id ? { ...item, status: 'DISABLED' } : item));
+                                } catch (err: any) {
+                                  setErrorMessage(err.message || 'Failed to disable user');
+                                }
+                              }}
+                              className="px-2.5 py-1 rounded bg-red-600/20 hover:bg-red-600/40 text-red-300 text-[10px] font-bold border border-red-500/30"
+                            >
+                              Disable
+                            </button>
+                          ) : (
+                            <button
+                              onClick={async () => {
+                                try {
+                                  await apiService.updateUserStatus(u.id, 'ACTIVE');
+                                  setUsers(users.map(item => item.id === u.id ? { ...item, status: 'ACTIVE' } : item));
+                                } catch (err: any) {
+                                  setErrorMessage(err.message || 'Failed to activate user');
+                                }
+                              }}
+                              className="px-2.5 py-1 rounded bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-300 text-[10px] font-bold border border-emerald-500/30"
+                            >
+                              Re-Activate
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

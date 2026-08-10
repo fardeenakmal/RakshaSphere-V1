@@ -81,6 +81,14 @@ public class AuthenticationService {
             throw new BadCredentialsException("Invalid username or password");
         }
 
+        // Account status enforcement
+        if (user.getStatus() == com.rakshasphere.model.entity.UserStatus.PENDING) {
+            throw new BadCredentialsException("Account pending administrator approval");
+        }
+        if (user.getStatus() == com.rakshasphere.model.entity.UserStatus.DISABLED) {
+            throw new BadCredentialsException("Account has been disabled. Contact system administrator.");
+        }
+
         if (user.isMfaEnabled()) {
             if (request.getMfaCode() == null || request.getMfaCode().isBlank()) {
                 throw new BadCredentialsException("MFA TOTP code required");
@@ -101,6 +109,60 @@ public class AuthenticationService {
                 .role(user.getRole().name())
                 .avatar(user.getAvatar())
                 .build();
+    }
+
+    public User register(RegisterRequestDTO request) {
+        if (!request.getPassword().equals(request.getConfirmPassword())) {
+            throw new IllegalArgumentException("Password confirmation does not match");
+        }
+
+        if (userRepository.findByUsername(request.getUsername()).isPresent()) {
+            throw new IllegalArgumentException("Username already registered");
+        }
+
+        if (userRepository.findAll().stream().anyMatch(u -> u.getEmail().equalsIgnoreCase(request.getEmail()))) {
+            throw new IllegalArgumentException("Email already registered");
+        }
+
+        // PREVENT SELF-REGISTRATION AS ADMIN
+        UserRole assignedRole = UserRole.ROLE_USER;
+        if (request.getRequestedRole() != null && !request.getRequestedRole().isBlank()) {
+            String roleStr = request.getRequestedRole().toUpperCase();
+            if (roleStr.contains("ANALYST") || roleStr.contains("SOC")) {
+                assignedRole = UserRole.ROLE_SOC_ANALYST;
+            }
+            // If requested ADMIN, reject self-granting admin privileges
+            if (roleStr.contains("ADMIN")) {
+                log.warn("User {} attempted self-registration as ADMIN. Overriding to ROLE_USER pending admin approval.", request.getUsername());
+                assignedRole = UserRole.ROLE_USER;
+            }
+        }
+
+        User newUser = User.builder()
+                .username(request.getUsername())
+                .name(request.getName())
+                .email(request.getEmail())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .role(assignedRole)
+                .status(com.rakshasphere.model.entity.UserStatus.PENDING)
+                .avatar("https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80")
+                .mfaEnabled(false)
+                .build();
+
+        return userRepository.save(newUser);
+    }
+
+    public boolean resetPassword(String username, String oldPassword, String newPassword) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new BadCredentialsException("User not found"));
+
+        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+            throw new BadCredentialsException("Incorrect existing password");
+        }
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+        return true;
     }
 
     public MfaSetupResponseDTO setupMfa(String username) {

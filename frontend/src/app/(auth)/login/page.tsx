@@ -46,6 +46,10 @@ export default function LoginPage() {
   const [reqReason, setReqReason] = useState('');
   const [reqError, setReqError] = useState('');
 
+  // MFA State
+  const [requiresMfa, setRequiresMfa] = useState(false);
+  const [mfaCode, setMfaCode] = useState('');
+
   // Calculate Password Strength
   const getPasswordStrength = (pass: string) => {
     if (!pass) return { score: 0, label: 'Weak', color: 'bg-slate-700' };
@@ -69,32 +73,52 @@ export default function LoginPage() {
     setErrorMsg('');
 
     try {
-      await loginAsync(username, password);
+      await loginAsync(username, password, requiresMfa ? mfaCode : undefined);
       router.push('/dashboard');
     } catch (err: any) {
       console.error("Login failed:", err);
-      setErrorMsg(err.message || 'Authentication failed. Check credentials or connection.');
+      const msg = err.message || '';
+      if (msg.includes('MFA TOTP code required')) {
+        setRequiresMfa(true);
+        setErrorMsg('Two-Factor Authentication Enabled. Please enter your 6-digit TOTP code.');
+      } else {
+        setErrorMsg(msg || 'Authentication failed. Check credentials or connection.');
+      }
       setIsLoading(false);
     }
   };
 
-  const handleRequestAccessSubmit = (e: React.FormEvent) => {
+  const handleRequestAccessSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setReqError('');
 
     if (reqPassword !== reqConfirmPassword) {
-      setReqError('Passwords do not match.');
+      setReqError('Password confirmation does not match.');
       return;
     }
 
-    setAccessSuccessMsg(`Request submitted for ${reqEmail}. Account Status: PENDING APPROVAL by SOC Super Admin.`);
-    setShowRequestAccessModal(false);
-    setReqName('');
-    setReqEmail('');
-    setReqOrg('');
-    setReqPassword('');
-    setReqConfirmPassword('');
-    setReqReason('');
+    try {
+      const { apiService } = await import('@/services/api');
+      await apiService.register({
+        username: reqEmail.split('@')[0],
+        name: reqName,
+        email: reqEmail,
+        password: reqPassword,
+        confirmPassword: reqConfirmPassword,
+        requestedRole: 'ROLE_SOC_ANALYST',
+      });
+
+      setAccessSuccessMsg(`Access request submitted for ${reqEmail}! Account Status: PENDING APPROVAL by SOC Administrator.`);
+      setShowRequestAccessModal(false);
+      setReqName('');
+      setReqEmail('');
+      setReqOrg('');
+      setReqPassword('');
+      setReqConfirmPassword('');
+      setReqReason('');
+    } catch (err: any) {
+      setReqError(err.message || 'Failed to submit registration request.');
+    }
   };
 
   return (
@@ -196,6 +220,24 @@ export default function LoginPage() {
               </div>
             )}
           </div>
+
+          {/* MFA TOTP 6-digit Code Step */}
+          {requiresMfa && (
+            <div className="space-y-1.5 p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 animate-in fade-in">
+              <label className="text-xs font-mono text-emerald-400 font-bold flex items-center gap-1.5">
+                <Lock className="w-3.5 h-3.5" /> 6-Digit TOTP Authenticator Code
+              </label>
+              <input
+                type="text"
+                maxLength={6}
+                value={mfaCode}
+                onChange={(e) => setMfaCode(e.target.value)}
+                required
+                placeholder="123456"
+                className="w-full bg-slate-950 border border-emerald-500/50 rounded-xl px-4 py-2.5 text-center text-sm font-mono tracking-widest text-emerald-300 focus:outline-none focus:ring-1 focus:ring-emerald-400"
+              />
+            </div>
+          )}
 
           {/* Remember Session Checkbox */}
           <div className="flex items-center justify-between pt-1">

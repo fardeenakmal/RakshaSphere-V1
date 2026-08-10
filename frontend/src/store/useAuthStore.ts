@@ -6,7 +6,7 @@ interface AuthState {
   currentUser: User | null;
   token: string | null;
   isAuthenticated: boolean;
-  loginAsync: (username: string, password: string) => Promise<boolean>;
+  loginAsync: (username: string, password: string, mfaCode?: string) => Promise<boolean>;
   logout: () => void;
   hasRole: (role: UserRole) => boolean;
   canPerformAction: (action: 'REMEDIATE' | 'DEPLOY_HONEYPOT' | 'MANAGE_USERS' | 'MANAGE_SETTINGS' | 'VIEW_AUDIT') => boolean;
@@ -17,9 +17,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   token: typeof window !== 'undefined' ? localStorage.getItem('rakshasphere_token') : null,
   isAuthenticated: false,
 
-  loginAsync: async (username: string, password: string) => {
+  loginAsync: async (username: string, password: string, mfaCode?: string) => {
     try {
-      const res = await apiService.login(username, password);
+      const res = await apiService.login(username, password, mfaCode);
       const token = res.token || res.jwt;
 
       if (!token) {

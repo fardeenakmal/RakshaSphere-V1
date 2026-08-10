@@ -36,6 +36,11 @@ public class User {
     @Column(name = "avatar_url")
     private String avatar;
 
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    @Builder.Default
+    private UserStatus status = UserStatus.ACTIVE;
+
     @Column(name = "mfa_enabled")
     @Builder.Default
     private Boolean mfaEnabled = false;

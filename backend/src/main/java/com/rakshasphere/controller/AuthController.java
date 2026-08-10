@@ -21,6 +21,12 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponseDTO.ok("Authentication successful", response));
     }
 
+    @PostMapping("/register")
+    public ResponseEntity<ApiResponseDTO<com.rakshasphere.model.entity.User>> register(@Valid @RequestBody RegisterRequestDTO request) {
+        com.rakshasphere.model.entity.User registeredUser = authenticationService.register(request);
+        return ResponseEntity.ok(ApiResponseDTO.ok("Access request submitted successfully. Account pending administrator approval.", registeredUser));
+    }
+
     @GetMapping("/mfa/setup")
     public ResponseEntity<ApiResponseDTO<MfaSetupResponseDTO>> setupMfa(@RequestParam String username) {
         MfaSetupResponseDTO response = authenticationService.setupMfa(username);

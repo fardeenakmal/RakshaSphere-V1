@@ -38,13 +38,21 @@ export async function fetchApi<T>(endpoint: string, options: RequestInit = {}): 
 
 export const apiService = {
   // Auth REST Endpoints
-  async login(username: string, password?: string) {
+  async login(username: string, password?: string, mfaCode?: string) {
     return fetchApi<any>('/auth/login', {
       method: 'POST',
       body: JSON.stringify({
         username: username || 'admin',
         password: password || 'password',
+        mfaCode: mfaCode || undefined,
       }),
+    });
+  },
+
+  async register(data: { username: string; name: string; email: string; password: string; confirmPassword: string; requestedRole?: string }) {
+    return fetchApi<any>('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify(data),
     });
   },
 
@@ -110,6 +118,24 @@ export const apiService = {
   // User Management Endpoints
   async getUsers() {
     return fetchApi<any[]>('/users');
+  },
+
+  async getPendingUsers() {
+    return fetchApi<any[]>('/users/pending');
+  },
+
+  async approveUser(id: number | string, role?: string) {
+    return fetchApi<any>(`/users/${id}/approve`, {
+      method: 'PUT',
+      body: JSON.stringify({ role }),
+    });
+  },
+
+  async updateUserStatus(id: number | string, status: string) {
+    return fetchApi<any>(`/users/${id}/status`, {
+      method: 'PUT',
+      body: JSON.stringify({ status }),
+    });
   },
 
   async createUser(user: { username: string; email: string; name?: string; role?: string; password?: string }) {
