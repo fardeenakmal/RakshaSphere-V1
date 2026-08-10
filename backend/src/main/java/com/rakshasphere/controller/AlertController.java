@@ -17,12 +17,14 @@ public class AlertController {
     private SecurityAlertService alertService;
 
     @GetMapping
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ADMIN', 'SOC_ANALYST', 'USER')")
     public ResponseEntity<ApiResponseDTO<List<SecurityAlert>>> getAllAlerts() {
         List<SecurityAlert> alerts = alertService.getAllAlerts();
         return ResponseEntity.ok(ApiResponseDTO.ok("Security alerts retrieved successfully", alerts));
     }
 
     @GetMapping("/{id}")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ADMIN', 'SOC_ANALYST', 'USER')")
     public ResponseEntity<ApiResponseDTO<SecurityAlert>> getAlertById(@PathVariable String id) {
         return alertService.getAlertById(id)
                 .map(alert -> ResponseEntity.ok(ApiResponseDTO.ok("Alert details retrieved", alert)))
@@ -30,6 +32,7 @@ public class AlertController {
     }
 
     @PostMapping
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ADMIN', 'SOC_ANALYST')")
     public ResponseEntity<ApiResponseDTO<SecurityAlert>> createAlert(@RequestBody SecurityAlert alert) {
         if (alert.getId() == null || alert.getId().isEmpty()) {
             alert.setId("ALT-" + System.currentTimeMillis());

@@ -17,6 +17,7 @@ public class SelfHealingController {
     private SelfHealingService selfHealingService;
 
     @PostMapping("/remediate")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ADMIN', 'SOC_ANALYST')")
     public ResponseEntity<ApiResponseDTO<SecurityAlert>> remediateAlert(@Valid @RequestBody RemediationRequestDTO request) {
         String actionType = request.getActionType() != null ? request.getActionType() : "eBPF_DROP";
 

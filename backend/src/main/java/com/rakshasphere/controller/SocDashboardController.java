@@ -25,6 +25,7 @@ public class SocDashboardController {
     private AuditLogRepository auditLogRepository;
 
     @GetMapping("/metrics")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ADMIN', 'SOC_ANALYST', 'USER')")
     public ResponseEntity<ApiResponseDTO<SystemMetricsDTO>> getSystemMetrics() {
         long activeThreats = alertRepository.countByStatus(AlertStatus.ACTIVE);
         long containedToday = alertRepository.countByStatus(AlertStatus.CONTAINED);
@@ -44,6 +45,7 @@ public class SocDashboardController {
     }
 
     @GetMapping("/audit-logs")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ADMIN', 'SOC_ANALYST', 'USER')")
     public ResponseEntity<ApiResponseDTO<List<AuditLog>>> getAuditLogs() {
         List<AuditLog> auditLogs = auditLogRepository.findTop20ByOrderByTimestampDesc();
         return ResponseEntity.ok(ApiResponseDTO.ok("Audit logs retrieved", auditLogs));

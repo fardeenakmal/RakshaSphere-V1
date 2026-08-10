@@ -34,21 +34,43 @@ public class AuthenticationService {
 
     @PostConstruct
     public void initDefaultAdmin() {
-        if (userRepository.findByUsername("admin").isEmpty()) {
-            User admin = User.builder()
-                    .username("admin")
-                    .name("System Administrator")
-                    .email("admin@rakshasphere.internal")
-                    .role(UserRole.ROLE_ADMIN)
-                    .password(passwordEncoder.encode("Admin@Raksha2026!"))
-                    .avatar("https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80")
-                    .mfaEnabled(false)
-                    .build();
-            userRepository.save(admin);
-            log.info("Default admin account initialized");
-        } else {
-            log.info("Admin account already exists, skipping initialization");
-        }
+        // Admin user
+        User admin = userRepository.findByUsername("admin").orElseGet(() -> User.builder()
+                .username("admin")
+                .name("System Administrator")
+                .email("admin@rakshasphere.internal")
+                .avatar("https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80")
+                .build());
+        admin.setRole(UserRole.ROLE_ADMIN);
+        admin.setPassword(passwordEncoder.encode("Admin@Raksha2026!"));
+        admin.setMfaEnabled(false);
+        userRepository.save(admin);
+
+        // Analyst user
+        User analyst = userRepository.findByUsername("analyst_mike").orElseGet(() -> User.builder()
+                .username("analyst_mike")
+                .name("Mike Ross")
+                .email("mike.r@rakshasphere.internal")
+                .avatar("https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80")
+                .build());
+        analyst.setRole(UserRole.ROLE_SOC_ANALYST);
+        analyst.setPassword(passwordEncoder.encode("Analyst@Raksha2026!"));
+        analyst.setMfaEnabled(false);
+        userRepository.save(analyst);
+
+        // Executive viewer user
+        User user = userRepository.findByUsername("user").orElseGet(() -> User.builder()
+                .username("user")
+                .name("Executive Viewer")
+                .email("user@rakshasphere.internal")
+                .avatar("https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80")
+                .build());
+        user.setRole(UserRole.ROLE_USER);
+        user.setPassword(passwordEncoder.encode("User@Raksha2026!"));
+        user.setMfaEnabled(false);
+        userRepository.save(user);
+
+        log.info("Default system role accounts initialized (admin, analyst_mike, user)");
     }
 
     public AuthResponseDTO authenticate(AuthRequestDTO request) {
@@ -57,6 +79,15 @@ public class AuthenticationService {
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new BadCredentialsException("Invalid username or password");
+        }
+
+        if (user.isMfaEnabled()) {
+            if (request.getMfaCode() == null || request.getMfaCode().isBlank()) {
+                throw new BadCredentialsException("MFA TOTP code required");
+            }
+            if (!mfaService.verifyCode(user.getMfaSecret(), request.getMfaCode())) {
+                throw new BadCredentialsException("Invalid MFA TOTP code");
+            }
         }
 
         String token = tokenProvider.generateTokenForUsername(user.getUsername());

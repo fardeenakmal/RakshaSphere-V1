@@ -17,12 +17,14 @@ public class HoneypotController {
     private HoneypotOrchestratorService honeypotService;
 
     @GetMapping
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ADMIN', 'SOC_ANALYST', 'USER')")
     public ResponseEntity<ApiResponseDTO<List<HoneypotSession>>> getAllHoneypots() {
         List<HoneypotSession> sessions = honeypotService.getAllHoneypots();
         return ResponseEntity.ok(ApiResponseDTO.ok("Active honeypot sessions retrieved", sessions));
     }
 
     @PostMapping("/deploy")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ADMIN', 'SOC_ANALYST')")
     public ResponseEntity<ApiResponseDTO<HoneypotSession>> deployHoneypot(
             @RequestParam(defaultValue = "SSH") String service,
             @RequestParam(defaultValue = "185.220.101.99") String attackerIp) {

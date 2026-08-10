@@ -12,4 +12,5 @@ public class AuthRequestDTO {
     private String password;
 
     private String requestedRole;
+    private String mfaCode;
 }
