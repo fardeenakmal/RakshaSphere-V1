@@ -56,8 +56,11 @@ export default function DashboardPage() {
 
     import('@stomp/stompjs').then(({ Client }) => {
       import('sockjs-client').then((SockJS) => {
+        const token = localStorage.getItem('rakshasphere_token');
         client = new Client({
           webSocketFactory: () => new SockJS.default('http://localhost:8080/ws-soc'),
+          connectHeaders: token ? { Authorization: `Bearer ${token}` } : {},
+          reconnectDelay: 5000,
           onConnect: () => {
             console.log('STOMP Client connected');
             client.subscribe('/topic/alerts', (message: any) => {
