@@ -40,6 +40,9 @@ public class AlertController {
         if (alert.getStatus() == null) {
             alert.setStatus(com.rakshasphere.model.entity.AlertStatus.ACTIVE);
         }
+        if (alert.getConfidence() == null) {
+            alert.setConfidence(0.95);
+        }
         SecurityAlert saved = alertService.saveAndBroadcastAlert(alert);
         return ResponseEntity.ok(ApiResponseDTO.ok("Alert ingested successfully", saved));
     }

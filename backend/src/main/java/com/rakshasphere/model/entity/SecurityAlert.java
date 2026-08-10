@@ -43,6 +43,7 @@ public class SecurityAlert {
     private Integer riskScore;
 
     @Column(name = "confidence_score", nullable = false)
+    @com.fasterxml.jackson.annotation.JsonProperty("confidenceScore")
     private Double confidence;
 
     @Column(name = "mitre_tactic", nullable = false, length = 100)
