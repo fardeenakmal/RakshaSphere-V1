@@ -45,7 +45,7 @@ public class SocDashboardController {
     }
 
     @GetMapping("/audit-logs")
-    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ADMIN', 'SOC_ANALYST', 'USER')")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ADMIN', 'SOC_ANALYST')")
     public ResponseEntity<ApiResponseDTO<List<AuditLog>>> getAuditLogs() {
         List<AuditLog> auditLogs = auditLogRepository.findTop20ByOrderByTimestampDesc();
         return ResponseEntity.ok(ApiResponseDTO.ok("Audit logs retrieved", auditLogs));

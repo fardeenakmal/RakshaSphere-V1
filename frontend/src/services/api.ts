@@ -87,4 +87,42 @@ export const apiService = {
   async getAuditLogs() {
     return fetchApi<any[]>('/soc/audit-logs');
   },
+
+  // Settings & Configuration Endpoints
+  async getSettings() {
+    return fetchApi<any>('/settings');
+  },
+
+  async saveSettingsRules(riskThreshold: number, ebpfEnabled: boolean) {
+    return fetchApi<any>('/settings/rules', {
+      method: 'POST',
+      body: JSON.stringify({ riskThreshold, ebpfEnabled }),
+    });
+  },
+
+  async saveSettingsKeys(vtApiKey: string, abuseApiKey: string) {
+    return fetchApi<any>('/settings/keys', {
+      method: 'POST',
+      body: JSON.stringify({ vtApiKey, abuseApiKey }),
+    });
+  },
+
+  // User Management Endpoints
+  async getUsers() {
+    return fetchApi<any[]>('/users');
+  },
+
+  async createUser(user: { username: string; email: string; name?: string; role?: string; password?: string }) {
+    return fetchApi<any>('/users', {
+      method: 'POST',
+      body: JSON.stringify(user),
+    });
+  },
+
+  async updateUserRole(id: number | string, role: string) {
+    return fetchApi<any>(`/users/${id}/role`, {
+      method: 'PUT',
+      body: JSON.stringify({ role }),
+    });
+  },
 };

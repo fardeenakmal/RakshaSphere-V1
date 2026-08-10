@@ -26,6 +26,10 @@ public class ApiResponseDTO<T> {
                 .build();
     }
 
+    public static <T> ApiResponseDTO<T> success(String message, T data) {
+        return ok(message, data);
+    }
+
     public static <T> ApiResponseDTO<T> error(String message) {
         return ApiResponseDTO.<T>builder()
                 .success(false)

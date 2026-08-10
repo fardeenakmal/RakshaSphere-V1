@@ -8,9 +8,11 @@ interface AuthState {
   isAuthenticated: boolean;
   loginAsync: (username: string, password: string) => Promise<boolean>;
   logout: () => void;
+  hasRole: (role: UserRole) => boolean;
+  canPerformAction: (action: 'REMEDIATE' | 'DEPLOY_HONEYPOT' | 'MANAGE_USERS' | 'MANAGE_SETTINGS' | 'VIEW_AUDIT') => boolean;
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
+export const useAuthStore = create<AuthState>((set, get) => ({
   currentUser: null,
   token: typeof window !== 'undefined' ? localStorage.getItem('rakshasphere_token') : null,
   isAuthenticated: false,
@@ -61,5 +63,29 @@ export const useAuthStore = create<AuthState>((set) => ({
       localStorage.removeItem('rakshasphere_token');
     }
     set({ currentUser: null, token: null, isAuthenticated: false });
+  },
+
+  hasRole: (role: UserRole) => {
+    const { currentUser } = get();
+    if (!currentUser) return false;
+    return currentUser.role === role;
+  },
+
+  canPerformAction: (action) => {
+    const { currentUser } = get();
+    if (!currentUser) return false;
+    const role = currentUser.role;
+
+    switch (action) {
+      case 'MANAGE_USERS':
+      case 'MANAGE_SETTINGS':
+        return role === 'ROLE_ADMIN';
+      case 'REMEDIATE':
+      case 'DEPLOY_HONEYPOT':
+      case 'VIEW_AUDIT':
+        return role === 'ROLE_ADMIN' || role === 'ROLE_SOC_ANALYST';
+      default:
+        return false;
+    }
   }
 }));

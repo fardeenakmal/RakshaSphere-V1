@@ -16,20 +16,63 @@ export default function SettingsPage() {
   const [abuseApiKey, setAbuseApiKey] = useState('abuseipdb_sec_key_1a3b5c7d');
   const [auditLogs, setAuditLogs] = useState<any[]>(INITIAL_AUDIT_LOGS);
 
+  const [users, setUsers] = useState<any[]>(DEMO_USERS);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
   useEffect(() => {
+    // Fetch Audit Logs (requires ROLE_ADMIN or ROLE_SOC_ANALYST)
     apiService.getAuditLogs()
       .then((data) => {
         if (Array.isArray(data) && data.length > 0) {
           setAuditLogs(data);
         }
       })
-      .catch((err) => console.warn('Backend audit logs endpoint unreachable:', err));
+      .catch((err) => {
+        console.warn('Backend audit logs access restricted:', err);
+      });
+
+    // Fetch System Settings
+    apiService.getSettings()
+      .then((settings) => {
+        if (settings?.riskThreshold !== undefined) setRiskThreshold(settings.riskThreshold);
+        if (settings?.ebpfEnabled !== undefined) setEbpfMode(settings.ebpfEnabled);
+      })
+      .catch((err) => console.warn('Backend settings fetch warning:', err));
+
+    // Fetch Users list (requires ROLE_ADMIN)
+    apiService.getUsers()
+      .then((userList) => {
+        if (Array.isArray(userList) && userList.length > 0) {
+          setUsers(userList);
+        }
+      })
+      .catch((err) => console.warn('Users management endpoint restricted to ADMIN:', err));
   }, []);
 
-  const handleSaveRules = (e: React.FormEvent) => {
+  const handleSaveRules = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSavedSuccess(true);
-    setTimeout(() => setSavedSuccess(false), 3000);
+    setErrorMessage(null);
+    try {
+      await apiService.saveSettingsRules(riskThreshold, ebpfMode);
+      setSavedSuccess(true);
+      setTimeout(() => setSavedSuccess(false), 3000);
+    } catch (err: any) {
+      setErrorMessage(err.message || 'HTTP 403 Forbidden: Admin role required');
+      setTimeout(() => setErrorMessage(null), 4000);
+    }
+  };
+
+  const handleSaveKeys = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage(null);
+    try {
+      await apiService.saveSettingsKeys(vtApiKey, abuseApiKey);
+      setSavedSuccess(true);
+      setTimeout(() => setSavedSuccess(false), 3000);
+    } catch (err: any) {
+      setErrorMessage(err.message || 'HTTP 403 Forbidden: Admin role required');
+      setTimeout(() => setErrorMessage(null), 4000);
+    }
   };
 
   return (
@@ -49,6 +92,13 @@ export default function SettingsPage() {
           <div className="flex items-center gap-2 text-emerald-400 font-mono text-xs bg-emerald-500/10 px-3 py-1.5 rounded-xl border border-emerald-500/30 animate-in fade-in">
             <CheckCircle2 className="w-4 h-4" />
             <span>Settings Saved & Applied</span>
+          </div>
+        )}
+
+        {errorMessage && (
+          <div className="flex items-center gap-2 text-red-400 font-mono text-xs bg-red-500/10 px-3 py-1.5 rounded-xl border border-red-500/30 animate-in fade-in">
+            <Lock className="w-4 h-4" />
+            <span>{errorMessage}</span>
           </div>
         )}
       </div>
@@ -211,7 +261,7 @@ export default function SettingsPage() {
 
       {/* Tab 3: API Keys */}
       {activeTab === 'KEYS' && (
-        <form onSubmit={handleSaveRules} className="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-6 font-mono text-xs">
+        <form onSubmit={handleSaveKeys} className="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-6 font-mono text-xs">
           <h3 className="font-bold text-sm text-slate-100 border-b border-slate-800 pb-2">
             EXTERNAL THREAT INTELLIGENCE API CREDENTIALS
           </h3>
