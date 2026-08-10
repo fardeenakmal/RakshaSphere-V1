@@ -151,4 +151,30 @@ export const apiService = {
       body: JSON.stringify({ role }),
     });
   },
+
+  // AI Engine Endpoints
+  async getAiHealth() {
+    return fetchApi<any>('/ai/health');
+  },
+
+  async predictAiFlow(flowFeatures: number[], topK: number = 5) {
+    return fetchApi<any>('/ai/predict', {
+      method: 'POST',
+      body: JSON.stringify({ flowFeatures, topK }),
+    });
+  },
+
+  async explainAiFlow(flowFeatures: number[], topK: number = 5) {
+    return fetchApi<any>('/ai/explain', {
+      method: 'POST',
+      body: JSON.stringify({ flowFeatures, topK }),
+    });
+  },
+
+  async batchPredictAiFlow(flows: number[][]) {
+    return fetchApi<any>('/ai/batch-predict', {
+      method: 'POST',
+      body: JSON.stringify({ flows }),
+    });
+  },
 };

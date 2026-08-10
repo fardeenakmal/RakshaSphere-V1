@@ -45,6 +45,7 @@ def health_check():
         "status": "UP",
         "service": "RakshaSphere AI Inference Engine",
         "modelReady": pipeline.is_ready,
+        "trainingNotice": "MODEL TRAINED ON SYNTHETIC DATA",
         "manifest": pipeline.manifest
     }
 
