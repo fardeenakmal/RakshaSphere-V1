@@ -6,6 +6,8 @@ import com.rakshasphere.model.entity.UserRole;
 import com.rakshasphere.repository.UserRepository;
 import com.rakshasphere.security.JwtTokenProvider;
 import jakarta.annotation.PostConstruct;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -15,6 +17,8 @@ import java.util.Optional;
 
 @Service
 public class AuthenticationService {
+
+    private static final Logger log = LoggerFactory.getLogger(AuthenticationService.class);
 
     @Autowired
     private JwtTokenProvider tokenProvider;
@@ -30,18 +34,21 @@ public class AuthenticationService {
 
     @PostConstruct
     public void initDefaultAdmin() {
-        User admin = userRepository.findByUsername("admin").orElseGet(() -> User.builder()
-                .username("admin")
-                .name("System Administrator")
-                .email("admin@rakshasphere.internal")
-                .role(UserRole.ROLE_ADMIN)
-                .avatar("https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80")
-                .build());
-
-        admin.setPassword(passwordEncoder.encode("Admin@Raksha2026!"));
-        admin.setMfaEnabled(false);
-        userRepository.save(admin);
-        System.out.println("Initialized default production administrator account: admin / Admin@Raksha2026!");
+        if (userRepository.findByUsername("admin").isEmpty()) {
+            User admin = User.builder()
+                    .username("admin")
+                    .name("System Administrator")
+                    .email("admin@rakshasphere.internal")
+                    .role(UserRole.ROLE_ADMIN)
+                    .password(passwordEncoder.encode("Admin@Raksha2026!"))
+                    .avatar("https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80")
+                    .mfaEnabled(false)
+                    .build();
+            userRepository.save(admin);
+            log.info("Default admin account initialized");
+        } else {
+            log.info("Admin account already exists, skipping initialization");
+        }
     }
 
     public AuthResponseDTO authenticate(AuthRequestDTO request) {
@@ -95,3 +102,4 @@ public class AuthenticationService {
         return false;
     }
 }
+

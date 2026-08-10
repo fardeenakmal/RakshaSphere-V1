@@ -2,6 +2,9 @@ package com.rakshasphere.security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -14,11 +17,24 @@ import java.util.Date;
 @Component
 public class JwtTokenProvider {
 
-    @Value("${rakshasphere.jwt.secret:9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9a8b}")
+    private static final Logger log = LoggerFactory.getLogger(JwtTokenProvider.class);
+
+    @Value("${rakshasphere.jwt.secret}")
     private String jwtSecret;
 
     @Value("${rakshasphere.jwt.expiration-ms:86400000}")
     private String jwtExpirationMsStr;
+
+    @PostConstruct
+    public void validateSecret() {
+        if (jwtSecret == null || jwtSecret.isBlank()) {
+            throw new IllegalStateException("JWT_SECRET environment variable must be configured. Application cannot start without a JWT signing secret.");
+        }
+        if (jwtSecret.getBytes(StandardCharsets.UTF_8).length < 32) {
+            throw new IllegalStateException("JWT_SECRET must be at least 32 bytes (256 bits) for HMAC-SHA256 signing.");
+        }
+        log.info("JWT secret validated successfully");
+    }
 
     private long getExpirationMs() {
         try {
@@ -78,3 +94,4 @@ public class JwtTokenProvider {
         }
     }
 }
+

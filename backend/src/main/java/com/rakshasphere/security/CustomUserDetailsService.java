@@ -1,7 +1,6 @@
 package com.rakshasphere.security;
 
 import com.rakshasphere.model.entity.User;
-import com.rakshasphere.model.entity.UserRole;
 import com.rakshasphere.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -19,14 +18,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findByUsername(username)
-                .orElseGet(() -> User.builder()
-                        .username(username)
-                        .password("$2a$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeg6Lruj3vjPGga31lW") // "password123"
-                        .name(username.toUpperCase())
-                        .email(username + "@rakshasphere.internal")
-                        .role(UserRole.ROLE_ADMIN)
-                        .build()
-                );
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
 
         return new org.springframework.security.core.userdetails.User(
                 user.getUsername(),
@@ -35,3 +27,4 @@ public class CustomUserDetailsService implements UserDetailsService {
         );
     }
 }
+

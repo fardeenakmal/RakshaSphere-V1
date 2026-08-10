@@ -40,12 +40,11 @@ public class SecurityConfig {
                 .cors(cors -> {})
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/auth/**", "/h2-console/**", "/ws-soc/**", "/v3/api-docs/**", "/swagger-ui/**").permitAll()
+                        .requestMatchers("/api/v1/auth/**", "/ws-soc/**", "/v3/api-docs/**", "/swagger-ui/**").permitAll()
                         .anyRequest().authenticated() // Enforce authentication for all other endpoints
                 )
                 .headers(headers -> {
-                    headers.frameOptions(frame -> frame.disable()); // Allow H2 console
-                    headers.xssProtection(xss -> xss.disable());
+                    headers.frameOptions(frame -> frame.sameOrigin());
                     headers.contentSecurityPolicy(csp -> csp.policyDirectives("default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';"));
                     headers.httpStrictTransportSecurity(hsts -> hsts.includeSubDomains(true).maxAgeInSeconds(31536000));
                 });
@@ -55,3 +54,4 @@ public class SecurityConfig {
         return http.build();
     }
 }
+
