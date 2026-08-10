@@ -1,13 +1,21 @@
 package com.rakshasphere.controller;
 
 import com.rakshasphere.dto.ApiResponseDTO;
+import com.rakshasphere.dto.FlowIngestionDTO;
+import com.rakshasphere.model.entity.AlertSeverity;
+import com.rakshasphere.model.entity.AlertStatus;
 import com.rakshasphere.model.entity.SecurityAlert;
+import com.rakshasphere.service.AiEngineService;
 import com.rakshasphere.service.SecurityAlertService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/alerts")
@@ -16,15 +24,18 @@ public class AlertController {
     @Autowired
     private SecurityAlertService alertService;
 
+    @Autowired
+    private AiEngineService aiEngineService;
+
     @GetMapping
-    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ADMIN', 'SOC_ANALYST', 'USER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SOC_ANALYST', 'USER')")
     public ResponseEntity<ApiResponseDTO<List<SecurityAlert>>> getAllAlerts() {
         List<SecurityAlert> alerts = alertService.getAllAlerts();
         return ResponseEntity.ok(ApiResponseDTO.ok("Security alerts retrieved successfully", alerts));
     }
 
     @GetMapping("/{id}")
-    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ADMIN', 'SOC_ANALYST', 'USER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SOC_ANALYST', 'USER')")
     public ResponseEntity<ApiResponseDTO<SecurityAlert>> getAlertById(@PathVariable String id) {
         return alertService.getAlertById(id)
                 .map(alert -> ResponseEntity.ok(ApiResponseDTO.ok("Alert details retrieved", alert)))
@@ -32,21 +43,77 @@ public class AlertController {
     }
 
     @PostMapping
-    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ADMIN', 'SOC_ANALYST')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SOC_ANALYST')")
     public ResponseEntity<ApiResponseDTO<SecurityAlert>> createAlert(@RequestBody SecurityAlert alert) {
         if (alert.getId() == null || alert.getId().isEmpty()) {
             alert.setId("ALT-" + System.currentTimeMillis());
         }
         if (alert.getTimestamp() == null) {
-            alert.setTimestamp(java.time.LocalDateTime.now());
+            alert.setTimestamp(LocalDateTime.now());
         }
         if (alert.getStatus() == null) {
-            alert.setStatus(com.rakshasphere.model.entity.AlertStatus.ACTIVE);
+            alert.setStatus(AlertStatus.ACTIVE);
         }
         if (alert.getConfidence() == null) {
             alert.setConfidence(0.95);
         }
         SecurityAlert saved = alertService.saveAndBroadcastAlert(alert);
         return ResponseEntity.ok(ApiResponseDTO.ok("Alert ingested successfully", saved));
+    }
+
+    @PostMapping("/ingest-flow")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SOC_ANALYST')")
+    public ResponseEntity<ApiResponseDTO<SecurityAlert>> ingestNetworkFlow(@Valid @RequestBody FlowIngestionDTO flowDto) {
+        // Step 1: Query Python AI Engine for threat classification & dynamic risk score
+        Map aiRes = aiEngineService.predict(flowDto.getFlowFeatures(), 5);
+        Map aiData = (Map) aiRes.get("data");
+
+        if (aiData == null) {
+            return ResponseEntity.internalServerError().body(ApiResponseDTO.error("AI Engine inference returned empty data payload"));
+        }
+
+        // Step 2: Map AI prediction output to SecurityAlert domain model
+        String attackType = (String) aiData.get("attackType");
+        String severityStr = (String) aiData.get("severity");
+        AlertSeverity severity = AlertSeverity.HIGH;
+        if (severityStr != null) {
+            try {
+                severity = AlertSeverity.valueOf(severityStr.toUpperCase());
+            } catch (Exception ignored) {}
+        }
+
+        int riskScore = aiData.get("riskScore") != null ? ((Number) aiData.get("riskScore")).intValue() : 50;
+        double confidence = aiData.get("confidenceScore") != null ? ((Number) aiData.get("confidenceScore")).doubleValue() : 0.9;
+        String mitreTactic = (String) aiData.get("mitreTactic");
+        String mitreTechnique = (String) aiData.get("mitreTechnique");
+        String mitreId = (String) aiData.get("mitreId");
+        Double mseLoss = aiData.get("reconstructionMse") != null ? ((Number) aiData.get("reconstructionMse")).doubleValue() : 0.0;
+
+        SecurityAlert alert = SecurityAlert.builder()
+                .id("ALT-" + System.currentTimeMillis())
+                .timestamp(LocalDateTime.now())
+                .sourceIp(flowDto.getSourceIp() != null ? flowDto.getSourceIp() : "192.168.1.105")
+                .destinationIp(flowDto.getDestinationIp() != null ? flowDto.getDestinationIp() : "10.0.0.1")
+                .sourcePort(flowDto.getSourcePort() != null ? flowDto.getSourcePort() : 44332)
+                .destinationPort(flowDto.getDestinationPort() != null ? flowDto.getDestinationPort() : 22)
+                .attackType(attackType != null ? attackType : "SUSPICIOUS_NETWORK_FLOW")
+                .severity(severity)
+                .riskScore(riskScore)
+                .confidence(confidence)
+                .mitreTactic(mitreTactic != null ? mitreTactic : "Initial Access")
+                .mitreTechnique(mitreTechnique != null ? mitreTechnique : "Exploit")
+                .mitreId(mitreId != null ? mitreId : "T1110")
+                .status(AlertStatus.ACTIVE)
+                .remediationAction(riskScore >= 70 ? "Auto-remediation queued via eBPF XDP filter" : "Monitored")
+                .flowDurationMs(flowDto.getFlowFeatures().get(0).longValue())
+                .totalFwdPackets(flowDto.getFlowFeatures().get(1).intValue())
+                .packetLengthMean(flowDto.getFlowFeatures().get(2))
+                .autoencoderAnomalyScore(mseLoss)
+                .build();
+
+        // Step 3: Enrich Threat Intel (VirusTotal/AbuseIPDB), persist in MySQL DB, and publish to STOMP WebSocket (/topic/alerts)
+        SecurityAlert savedAlert = alertService.saveAndBroadcastAlert(alert);
+
+        return ResponseEntity.ok(ApiResponseDTO.ok("Network flow analyzed and alert published", savedAlert));
     }
 }

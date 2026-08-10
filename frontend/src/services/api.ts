@@ -65,6 +65,13 @@ export const apiService = {
     return fetchApi<any>(`/alerts/${id}`);
   },
 
+  async ingestNetworkFlow(flowData: { sourceIp?: string; destinationIp?: string; sourcePort?: number; destinationPort?: number; flowFeatures: number[] }) {
+    return fetchApi<any>('/alerts/ingest-flow', {
+      method: 'POST',
+      body: JSON.stringify(flowData),
+    });
+  },
+
   // Self-Healing Remediation REST Endpoint
   async remediateAlert(alertId: string, actionType: string = 'eBPF_DROP') {
     return fetchApi<any>('/self-healing/remediate', {
