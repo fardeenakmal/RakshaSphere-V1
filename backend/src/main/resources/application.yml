@@ -52,3 +52,14 @@ threat-intel:
   abuseipdb:
     api-key: ${ABUSEIPDB_API_KEY:}
 
+# Spring Actuator Observability
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+
