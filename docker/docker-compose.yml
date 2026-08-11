@@ -16,6 +16,13 @@ services:
       - mysql-data:/var/lib/mysql
       - ../database/init.sql:/docker-entrypoint-initdb.d/init.sql
 
+  mqtt-broker:
+    image: eclipse-mosquitto:latest
+    container_name: raksha-mosquitto
+    network_mode: host
+    volumes:
+      - ./mosquitto/config:/mosquitto/config:ro
+
   redis:
     image: redis:7-alpine
     container_name: raksha-redis
@@ -54,6 +61,41 @@ services:
       - database
       - redis
       - ai-engine
+
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    container_name: raksha-frontend
+    network_mode: host
+    depends_on:
+      - backend
+
+  nginx:
+    image: nginx:latest
+    container_name: raksha-nginx
+    network_mode: host
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/certs:/etc/nginx/certs:ro
+    depends_on:
+      - frontend
+      - backend
+
+  db-backup:
+    image: alpine:latest
+    container_name: raksha-db-backup
+    network_mode: host
+    env_file:
+      - ../.env
+    command: >
+      /bin/sh -c "apk add --no-cache mysql-client &&
+      echo '0 2 * * * /usr/bin/mysqldump -h 127.0.0.1 -u$${MYSQL_USER:-raksha_user} -p$${MYSQL_PASSWORD:-change_this_user_password} $${MYSQL_DATABASE:-rakshaspheredb} > /backups/backup-$$(date +\\%Y\\%m\\%d).sql' > /etc/crontabs/root &&
+      crond -f"
+    volumes:
+      - ./backups:/backups
+    depends_on:
+      - database
 
 volumes:
   mysql-data:
