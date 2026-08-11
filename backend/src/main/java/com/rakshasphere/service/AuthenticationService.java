@@ -133,7 +133,9 @@ public class AuthenticationService {
             }
             // If requested ADMIN, reject self-granting admin privileges
             if (roleStr.contains("ADMIN")) {
-                log.warn("User {} attempted self-registration as ADMIN. Overriding to ROLE_USER pending admin approval.", request.getUsername());
+                log.warn(
+                        "User {} attempted self-registration as ADMIN. Overriding to ROLE_USER pending admin approval.",
+                        request.getUsername());
                 assignedRole = UserRole.ROLE_USER;
             }
         }
@@ -190,8 +192,7 @@ public class AuthenticationService {
                 user.setMfaEnabled(true);
                 userRepository.save(user);
                 return true;
-            }
-        }
+ 
         return false;
     }
 }
