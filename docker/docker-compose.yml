@@ -97,5 +97,15 @@ services:
     depends_on:
       - database
 
+  iot-agent:
+    build:
+      context: ../iot-agent
+      dockerfile: Dockerfile
+    container_name: raksha-iot-agent
+    network_mode: host
+    depends_on:
+      - mqtt-broker
+
 volumes:
   mysql-data:
+

@@ -44,3 +44,11 @@ rakshasphere:
 # Rate Limiting
 rate-limit:
   max-requests-per-minute: ${RATE_LIMIT_MAX_REQUESTS:100}
+
+# Threat Intelligence API Configuration
+threat-intel:
+  virustotal:
+    api-key: ${VIRUSTOTAL_API_KEY:}
+  abuseipdb:
+    api-key: ${ABUSEIPDB_API_KEY:}
+

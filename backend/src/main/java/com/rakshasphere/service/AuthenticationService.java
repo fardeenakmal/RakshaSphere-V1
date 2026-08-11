@@ -192,8 +192,10 @@ public class AuthenticationService {
                 user.setMfaEnabled(true);
                 userRepository.save(user);
                 return true;
- 
+            }
+        }
         return false;
     }
 }
+
 

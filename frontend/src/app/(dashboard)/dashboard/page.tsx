@@ -123,10 +123,11 @@ export default function DashboardPage() {
 
   const computedRiskScore = activeCount > 0
     ? Math.min(100, Math.max(30, Math.round(alerts.reduce((acc, a) => acc + a.riskScore, 0) / alerts.length)))
-    : (metrics.systemRiskScore || 12);
+    : (metrics.systemRiskScore !== undefined ? metrics.systemRiskScore : 0);
 
-  const computedEbpfDrops = metrics.ebpfDropsCount || (containedCount * 42 + 1420);
-  const computedHoneypots = honeypotCount > 0 ? honeypotCount : (metrics.activeHoneypots || 4);
+  const computedEbpfDrops = metrics.ebpfDropsCount !== undefined ? metrics.ebpfDropsCount : containedCount;
+  const computedHoneypots = metrics.activeHoneypots !== undefined ? metrics.activeHoneypots : honeypotCount;
+
 
   return (
     <div className="space-y-6">

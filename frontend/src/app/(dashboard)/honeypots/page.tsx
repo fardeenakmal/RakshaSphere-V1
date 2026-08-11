@@ -9,19 +9,23 @@ import { PermissionGuard } from '@/components/common/PermissionGuard';
 import { apiService } from '@/services/api';
 
 export default function HoneypotsPage() {
-  const [honeypots, setHoneypots] = useState<HoneypotSession[]>(INITIAL_HONEYPOTS);
+  const [honeypots, setHoneypots] = useState<HoneypotSession[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
   const [showDeployModal, setShowDeployModal] = useState(false);
   const [selectedService, setSelectedService] = useState<'SSH' | 'HTTP' | 'TELNET' | 'FTP'>('SSH');
 
   useEffect(() => {
+    setLoading(true);
     apiService.getHoneypots()
       .then((data) => {
-        if (Array.isArray(data) && data.length > 0) {
+        if (Array.isArray(data)) {
           setHoneypots(data);
         }
       })
-      .catch((err) => console.warn('Backend honeypots REST endpoint unreachable:', err));
+      .catch((err) => console.warn('Backend honeypots REST endpoint unreachable:', err))
+      .finally(() => setLoading(false));
   }, []);
+
 
   const handleDeployTrap = async (e: React.FormEvent) => {
     e.preventDefault();

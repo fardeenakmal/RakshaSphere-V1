@@ -22,7 +22,7 @@ public class HoneypotOrchestratorService {
                     HoneypotSession.builder()
                             .id("HP-SSH-01")
                             .service("SSH")
-                            .containerId("docker-trap-ssh-7f9a")
+                            .containerId("simulated-trap-ssh-7f9a (Database Decoy)")
                             .attackerIp("185.220.101.5")
                             .port(2222)
                             .startTime(LocalDateTime.now().minusHours(1))
@@ -35,7 +35,7 @@ public class HoneypotOrchestratorService {
                     HoneypotSession.builder()
                             .id("HP-HTTP-02")
                             .service("HTTP")
-                            .containerId("docker-trap-web-3c1b")
+                            .containerId("simulated-trap-web-3c1b (Database Decoy)")
                             .attackerIp("198.51.100.42")
                             .port(8080)
                             .startTime(LocalDateTime.now().minusMinutes(30))
@@ -46,6 +46,7 @@ public class HoneypotOrchestratorService {
                             .riskScore(92)
                             .build()
             ));
+
         }
     }
 

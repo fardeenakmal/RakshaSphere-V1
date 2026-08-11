@@ -106,15 +106,16 @@ class IoTAgentDaemon:
         if mqtt is not None:
             try:
                 client_id = f"daemon_{self.device_id}_{random.randint(1000, 9999)}"
-                self.mqtt_client = mqtt.Client(client_id=client_id)
+                try:
+                    self.mqtt_client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_id=client_id)
+                except AttributeError:
+                    self.mqtt_client = mqtt.Client(client_id=client_id)
 
-                def on_connect(client, userdata, flags, rc):
-                    if rc == 0:
-                        print(f"✅ [MQTT Broker Connected] Connected to {self.mqtt_broker}:{self.mqtt_port}")
-                        client.subscribe(self.command_topic, qos=1)
-                        client.publish(self.status_topic, json.dumps({"status": "ONLINE", "deviceId": self.device_id}), retain=True)
-                    else:
-                        print(f"⚠️ [MQTT Connect Failed] Return code: {rc}")
+                def on_connect(client, userdata, flags, rc, properties=None):
+                    print(f"✅ [MQTT Broker Connected] Connected to {self.mqtt_broker}:{self.mqtt_port}")
+                    client.subscribe(self.command_topic, qos=1)
+                    client.publish(self.status_topic, json.dumps({"status": "ONLINE", "deviceId": self.device_id}), retain=True)
+
 
                 def on_message(client, userdata, msg):
                     print(f"📩 [MQTT Command Payload Received] Topic: {msg.topic}")
