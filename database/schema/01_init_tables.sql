@@ -87,11 +87,25 @@ CREATE TABLE IF NOT EXISTS honeypot_sessions (
     attacker_ip VARCHAR(45) NOT NULL,
     port INT NOT NULL,
     start_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    end_time TIMESTAMP NULL,
     status VARCHAR(20) NOT NULL,
     keystrokes_json TEXT,
     commands_json TEXT,
     payloads_captured INT DEFAULT 0,
     risk_score INT DEFAULT 50
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE IF NOT EXISTS honeypot_events (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    session_id VARCHAR(50) NOT NULL,
+    event_type VARCHAR(100) NOT NULL,
+    source_ip VARCHAR(45),
+    source_port INT,
+    timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    username VARCHAR(100),
+    command VARCHAR(500),
+    raw_event_json TEXT,
+    CONSTRAINT fk_honeypot_event_session FOREIGN KEY (session_id) REFERENCES honeypot_sessions(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 CREATE TABLE IF NOT EXISTS recovery_actions (

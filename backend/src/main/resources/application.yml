@@ -40,6 +40,10 @@ rakshasphere:
   jwt:
     secret: ${JWT_SECRET}
     expiration-ms: ${JWT_EXPIRATION_MS:86400000} # 24 Hours
+  honeypot:
+    manager-url: ${HONEYPOT_MANAGER_URL:http://localhost:6000}
+    manager-api-key: ${HONEYPOT_MANAGER_API_KEY:changeme}
+
 
 # Rate Limiting
 rate-limit:

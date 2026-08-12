@@ -32,6 +32,10 @@ public class HoneypotSession {
     @Column(name = "start_time", nullable = false)
     private LocalDateTime startTime;
 
+    @Column(name = "end_time")
+    private LocalDateTime endTime;
+
+
     @Column(nullable = false, length = 20)
     private String status;
 

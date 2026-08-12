@@ -11,6 +11,10 @@ CREATE INDEX idx_security_alerts_status_timestamp ON security_alerts(status, tim
 CREATE INDEX idx_honeypot_sessions_attacker_ip ON honeypot_sessions(attacker_ip);
 CREATE INDEX idx_honeypot_sessions_status ON honeypot_sessions(status);
 
+-- Indexes for Honeypot Events
+CREATE INDEX idx_honeypot_events_session_id ON honeypot_events(session_id);
+CREATE INDEX idx_honeypot_events_timestamp ON honeypot_events(timestamp DESC);
+
 -- Indexes for Cryptographic Audit Logs
 CREATE INDEX idx_audit_logs_timestamp ON audit_logs(timestamp DESC);
 

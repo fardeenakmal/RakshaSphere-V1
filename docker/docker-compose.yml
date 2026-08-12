@@ -68,6 +68,8 @@ services:
       - JWT_EXPIRATION_MS=${JWT_EXPIRATION_MS:-86400000}
       - FRONTEND_URL=${FRONTEND_URL:-http://localhost:3000}
       - RATE_LIMIT_MAX_REQUESTS=${RATE_LIMIT_MAX_REQUESTS:-100}
+      - HONEYPOT_MANAGER_URL=http://localhost:6000
+      - HONEYPOT_MANAGER_API_KEY=${HONEYPOT_MANAGER_API_KEY:-changeme}
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
       interval: 15s
@@ -129,6 +131,44 @@ services:
     depends_on:
       - mqtt-broker
 
+  honeypot-manager:
+    build:
+      context: ../honeypot-manager
+      dockerfile: Dockerfile
+    container_name: raksha-honeypot-manager
+    network_mode: host
+    environment:
+      - HONEYPOT_MANAGER_API_KEY=${HONEYPOT_MANAGER_API_KEY:-changeme}
+      - BACKEND_URL=http://localhost:8080
+      - HONEYPOT_NETWORK=honeypot_net
+      - COWRIE_IMAGE=cowrie/cowrie:latest
+      - COWRIE_SSH_PORT=2222
+      - MAX_HONEYPOTS=5
+      - LOG_DIR=/logs
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - cowrie-logs:/logs
+    depends_on:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:6000/health')\""]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
+
+networks:
+  honeypot_net:
+    driver: bridge
+    internal: true
+    ipam:
+      config:
+        - subnet: 172.30.0.0/24
+
 volumes:
   mysql-data:
-
+  cowrie-logs:
