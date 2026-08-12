@@ -7,6 +7,7 @@ import com.rakshasphere.model.entity.HoneypotSession;
 import com.rakshasphere.service.HoneypotOrchestratorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,15 +19,26 @@ public class HoneypotController {
     @Autowired
     private HoneypotOrchestratorService honeypotService;
 
+    // 1. LIST — GET /api/v1/honeypots
     @GetMapping
-    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ADMIN', 'SOC_ANALYST', 'USER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SOC_ANALYST', 'USER')")
     public ResponseEntity<ApiResponseDTO<List<HoneypotSession>>> getAllHoneypots() {
         List<HoneypotSession> sessions = honeypotService.getAllHoneypots();
         return ResponseEntity.ok(ApiResponseDTO.ok("Active honeypot sessions retrieved", sessions));
     }
 
+    // 2. GET DETAILS — GET /api/v1/honeypots/{id}
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SOC_ANALYST', 'USER')")
+    public ResponseEntity<ApiResponseDTO<HoneypotSession>> getHoneypotById(@PathVariable String id) {
+        return honeypotService.getHoneypotById(id)
+                .map(session -> ResponseEntity.ok(ApiResponseDTO.ok("Honeypot session details retrieved", session)))
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    // 3. CREATE/DEPLOY — POST /api/v1/honeypots/deploy
     @PostMapping("/deploy")
-    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ADMIN', 'SOC_ANALYST')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SOC_ANALYST')")
     public ResponseEntity<ApiResponseDTO<HoneypotSession>> deployHoneypot(
             @RequestParam(defaultValue = "SSH") String service,
             @RequestParam(defaultValue = "185.220.101.99") String attackerIp) {
@@ -34,30 +46,37 @@ public class HoneypotController {
         return ResponseEntity.ok(ApiResponseDTO.ok("Deception trap deployed successfully", newTrap));
     }
 
-    @PostMapping("/stop/{sessionId}")
-    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ADMIN', 'SOC_ANALYST')")
-    public ResponseEntity<ApiResponseDTO<HoneypotSession>> stopHoneypot(
-            @PathVariable String sessionId) {
-        HoneypotSession stopped = honeypotService.stopHoneypot(sessionId);
+    // 4. STOP — POST /api/v1/honeypots/{id}/stop (and /api/v1/honeypots/stop/{id})
+    @PostMapping({"/{id}/stop", "/stop/{id}"})
+    @PreAuthorize("hasAnyRole('ADMIN', 'SOC_ANALYST')")
+    public ResponseEntity<ApiResponseDTO<HoneypotSession>> stopHoneypot(@PathVariable String id) {
+        HoneypotSession stopped = honeypotService.stopHoneypot(id);
         return ResponseEntity.ok(ApiResponseDTO.ok("Honeypot container stopped", stopped));
+    }
+
+    // 5. REMOVE/DELETE — DELETE /api/v1/honeypots/{id}
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SOC_ANALYST')")
+    public ResponseEntity<ApiResponseDTO<Void>> deleteHoneypot(@PathVariable String id) {
+        honeypotService.deleteHoneypot(id);
+        return ResponseEntity.ok(ApiResponseDTO.ok("Honeypot session removed", null));
+    }
+
+    // 6. GET EVENTS — GET /api/v1/honeypots/{id}/events
+    @GetMapping("/{id}/events")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SOC_ANALYST', 'USER')")
+    public ResponseEntity<ApiResponseDTO<List<HoneypotEvent>>> getSessionEvents(@PathVariable String id) {
+        List<HoneypotEvent> events = honeypotService.getEventsForSession(id);
+        return ResponseEntity.ok(ApiResponseDTO.ok("Honeypot events retrieved", events));
     }
 
     /**
      * Receives events from the Honeypot Manager sidecar.
-     * This endpoint is called by the internal event collector, not by the UI.
+     * Internal event forwarding endpoint called by the collector.
      */
     @PostMapping("/events")
-    public ResponseEntity<ApiResponseDTO<HoneypotEvent>> receiveEvent(
-            @RequestBody HoneypotEventDTO eventDto) {
+    public ResponseEntity<ApiResponseDTO<HoneypotEvent>> receiveEvent(@RequestBody HoneypotEventDTO eventDto) {
         HoneypotEvent saved = honeypotService.processEvent(eventDto);
         return ResponseEntity.ok(ApiResponseDTO.ok("Honeypot event processed", saved));
-    }
-
-    @GetMapping("/{sessionId}/events")
-    @org.springframework.security.access.prepost.PreAuthorize("hasAnyRole('ADMIN', 'SOC_ANALYST', 'USER')")
-    public ResponseEntity<ApiResponseDTO<List<HoneypotEvent>>> getSessionEvents(
-            @PathVariable String sessionId) {
-        List<HoneypotEvent> events = honeypotService.getEventsForSession(sessionId);
-        return ResponseEntity.ok(ApiResponseDTO.ok("Honeypot events retrieved", events));
     }
 }

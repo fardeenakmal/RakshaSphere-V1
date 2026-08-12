@@ -138,27 +138,56 @@ def verify_api_key(x_api_key: str = Header(...)):
     return x_api_key
 
 
-# ──────────────────────────────────────────────────────────────
-# Event forwarding to Spring Boot
-# ──────────────────────────────────────────────────────────────
+def map_event_type(raw_event_id: str) -> str:
+    """Normalize raw Cowrie event IDs to standardized RakshaSphere event types."""
+    if not raw_event_id:
+        return "UNKNOWN"
+
+    mapping = {
+        "cowrie.session.connect": "CONNECTION",
+        "cowrie.login.success": "SSH_LOGIN_SUCCESS",
+        "cowrie.login.failed": "SSH_LOGIN_FAILURE",
+        "cowrie.command.input": "COMMAND",
+        "cowrie.command.failed": "COMMAND",
+        "cowrie.session.closed": "SESSION_CLOSED",
+        "HONEYPOT_STARTED": "HONEYPOT_STARTED",
+        "HONEYPOT_STOPPED": "HONEYPOT_STOPPED",
+    }
+
+    if raw_event_id in mapping:
+        return mapping[raw_event_id]
+
+    if "login" in raw_event_id.lower():
+        return "SSH_LOGIN_ATTEMPT"
+    if "command" in raw_event_id.lower():
+        return "COMMAND"
+    if "connect" in raw_event_id.lower():
+        return "CONNECTION"
+
+    return raw_event_id
+
+
 async def forward_event_to_backend(session_id: str, event: dict):
-    """POST a honeypot event to Spring Boot backend."""
+    """POST a normalized honeypot event to Spring Boot backend."""
     url = f"{BACKEND_URL}/api/v1/honeypots/events"
     headers = {"Content-Type": "application/json"}
     if BACKEND_JWT:
         headers["Authorization"] = f"Bearer {BACKEND_JWT}"
 
+    raw_id = event.get("eventid", event.get("eventType", "unknown"))
+    normalized_type = map_event_type(raw_id)
+
     payload = {
         "sessionId": session_id,
-        "eventType": event.get("eventid", "unknown"),
-        "sourceIp": event.get("src_ip", "unknown"),
-        "sourcePort": event.get("src_port", 0),
+        "eventType": normalized_type,
+        "sourceIp": event.get("src_ip", event.get("sourceIp", "0.0.0.0")),
+        "sourcePort": event.get("src_port", event.get("sourcePort", 0)),
         "timestamp": event.get("timestamp", datetime.now(timezone.utc).isoformat()),
         "username": event.get("username", ""),
-        "password": "",  # Never forward passwords
-        "command": event.get("input", event.get("message", "")),
+        "password": "",  # NEVER store or forward submitted passwords
+        "command": event.get("input", event.get("command", event.get("message", ""))),
         "rawEventJson": json.dumps(
-            {k: v for k, v in event.items() if k != "password"}
+            {k: v for k, v in event.items() if k.lower() != "password"}
         ),
     }
 
@@ -166,13 +195,14 @@ async def forward_event_to_backend(session_id: str, event: dict):
         async with httpx.AsyncClient(timeout=5.0) as client:
             resp = await client.post(url, json=payload, headers=headers)
             if resp.status_code < 300:
-                logger.debug(f"Event forwarded: {event.get('eventid')}")
+                logger.debug(f"Event forwarded: {normalized_type} for session {session_id}")
             else:
                 logger.warning(
-                    f"Backend returned {resp.status_code} for event: {event.get('eventid')}"
+                    f"Backend returned {resp.status_code} for event: {normalized_type}"
                 )
     except Exception as e:
         logger.error(f"Failed to forward event to backend: {e}")
+
 
 
 # ──────────────────────────────────────────────────────────────
@@ -350,6 +380,15 @@ async def deploy_honeypot(
             f"on {HONEYPOT_NETWORK} (port {req.host_port})"
         )
 
+        # Forward HONEYPOT_STARTED event to backend
+        asyncio.create_task(forward_event_to_backend(req.session_id, {
+            "eventType": "HONEYPOT_STARTED",
+            "src_ip": req.attacker_ip,
+            "src_port": req.host_port,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "message": f"Honeypot container {container.short_id} started on port {req.host_port}"
+        }))
+
         # Start background log watcher
         task = asyncio.create_task(watch_cowrie_logs(req.session_id, container_name))
         log_watchers[req.session_id] = task
@@ -388,6 +427,16 @@ async def _stop_honeypot(session_id: str) -> str:
         logger.error(f"Error stopping container {container_id}: {e}")
 
     active_sessions.pop(session_id, None)
+
+    # Forward HONEYPOT_STOPPED event to backend
+    asyncio.create_task(forward_event_to_backend(session_id, {
+        "eventType": "HONEYPOT_STOPPED",
+        "src_ip": "0.0.0.0",
+        "src_port": 0,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "message": f"Honeypot container {session_id} stopped and removed"
+    }))
+
 
     # Cancel log watcher
     watcher = log_watchers.pop(session_id, None)

@@ -49,6 +49,28 @@ public class HoneypotOrchestratorService {
     }
 
     // ──────────────────────────────────────────────────────────
+    // GET honeypot session by ID
+    // ──────────────────────────────────────────────────────────
+    public Optional<HoneypotSession> getHoneypotById(String id) {
+        return honeypotRepository.findById(id);
+    }
+
+    // ──────────────────────────────────────────────────────────
+    // DELETE honeypot session — stops container if running and removes DB entry
+    // ──────────────────────────────────────────────────────────
+    @Transactional
+    public void deleteHoneypot(String id) {
+        honeypotRepository.findById(id).ifPresent(session -> {
+            if ("RUNNING".equalsIgnoreCase(session.getStatus())) {
+                stopHoneypot(id);
+            }
+            honeypotRepository.deleteById(id);
+            logger.info("Deleted honeypot session record: {}", id);
+        });
+    }
+
+
+    // ──────────────────────────────────────────────────────────
     // DEPLOY a new honeypot — calls Honeypot Manager API
     // ──────────────────────────────────────────────────────────
     @Transactional
