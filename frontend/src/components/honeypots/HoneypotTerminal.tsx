@@ -38,11 +38,23 @@ export const HoneypotTerminal: React.FC<HoneypotTerminalProps> = ({ sessions, on
     let client: any = null;
 
     import('@stomp/stompjs').then(({ Client }) => {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('rakshasphere_token') : null;
+      const getBrokerUrl = (): string => {
+        if (process.env.NEXT_PUBLIC_WS_URL) {
+          const wsUrl = process.env.NEXT_PUBLIC_WS_URL.replace(/^http:/, 'ws:').replace(/^https:/, 'wss:');
+          return wsUrl.endsWith('/websocket') ? wsUrl : `${wsUrl.replace(/\/+$/, '')}/websocket`;
+        }
+        if (process.env.NEXT_PUBLIC_API_URL) {
+          const clean = process.env.NEXT_PUBLIC_API_URL.replace(/\/+$/, '').replace(/\/api\/v1$/, '').replace(/^http:/, 'ws:').replace(/^https:/, 'wss:');
+          return `${clean}/ws-soc/websocket`;
+        }
+        const host = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
+        return `ws://${host}:8080/ws-soc/websocket`;
+      };
 
-      const host = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
+      const token = typeof window !== 'undefined' ? localStorage.getItem('rakshasphere_token') : null;
+      const brokerURL = getBrokerUrl();
       client = new Client({
-        brokerURL: `ws://${host}:8080/ws-soc/websocket`,
+        brokerURL,
 
         connectHeaders: token ? { Authorization: `Bearer ${token}` } : {},
         reconnectDelay: 5000,

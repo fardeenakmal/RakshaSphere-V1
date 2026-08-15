@@ -67,9 +67,21 @@ export default function DashboardPage() {
     import('@stomp/stompjs').then(({ Client }) => {
       import('sockjs-client').then((SockJS) => {
         const token = localStorage.getItem('rakshasphere_token');
-        const host = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
+        const getSockJsUrl = (): string => {
+          if (process.env.NEXT_PUBLIC_WS_URL) {
+            return process.env.NEXT_PUBLIC_WS_URL.replace(/^wss:/, 'https:').replace(/^ws:/, 'http:');
+          }
+          if (process.env.NEXT_PUBLIC_API_URL) {
+            const clean = process.env.NEXT_PUBLIC_API_URL.replace(/\/+$/, '').replace(/\/api\/v1$/, '');
+            return `${clean}/ws-soc`;
+          }
+          const host = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
+          return `http://${host}:8080/ws-soc`;
+        };
+
+        const sockJsUrl = getSockJsUrl();
         client = new Client({
-          webSocketFactory: () => new SockJS.default(`http://${host}:8080/ws-soc`),
+          webSocketFactory: () => new SockJS.default(sockJsUrl),
           connectHeaders: token ? { Authorization: `Bearer ${token}` } : {},
           reconnectDelay: 5000,
           onConnect: () => {

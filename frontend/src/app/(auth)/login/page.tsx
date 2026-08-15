@@ -28,8 +28,8 @@ export default function LoginPage() {
   const router = useRouter();
   const { loginAsync } = useAuthStore();
 
-  const [username, setUsername] = useState('admin@rakshasphere.internal');
-  const [password, setPassword] = useState('Admin@123456');
+  const [username, setUsername] = useState('admin');
+  const [password, setPassword] = useState('Admin@Raksha2026!');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
@@ -56,14 +56,14 @@ export default function LoginPage() {
   // Quick Role Testers
   const handleQuickRoleSelect = (role: 'ADMIN' | 'ANALYST' | 'USER') => {
     if (role === 'ADMIN') {
-      setUsername('admin@rakshasphere.internal');
-      setPassword('Admin@123456');
+      setUsername('admin');
+      setPassword('Admin@Raksha2026!');
     } else if (role === 'ANALYST') {
-      setUsername('analyst@rakshasphere.internal');
-      setPassword('Analyst@123456');
+      setUsername('analyst_mike');
+      setPassword('Analyst@Raksha2026!');
     } else {
-      setUsername('user@rakshasphere.internal');
-      setPassword('User@123456');
+      setUsername('user');
+      setPassword('User@Raksha2026!');
     }
   };
 

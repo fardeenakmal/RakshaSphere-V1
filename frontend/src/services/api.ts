@@ -3,8 +3,14 @@
  * Target: Spring Boot Core Backend (http://localhost:8080/api/v1)
  */
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api/v1';
+const getApiBaseUrl = (): string => {
+  const envUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (!envUrl) return '/api/v1';
+  const cleanUrl = envUrl.replace(/\/+$/, '');
+  return cleanUrl.endsWith('/api/v1') ? cleanUrl : `${cleanUrl}/api/v1`;
+};
 
+const BASE_URL = getApiBaseUrl();
 
 export async function fetchApi<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const token = typeof window !== 'undefined' ? localStorage.getItem('rakshasphere_token') : null;
@@ -16,6 +22,10 @@ export async function fetchApi<T>(endpoint: string, options: RequestInit = {}): 
 
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  if (typeof window !== 'undefined') {
+    console.log(`[API Request] ${endpoint} | Authorization header present: ${Boolean(token)}`);
   }
 
   try {

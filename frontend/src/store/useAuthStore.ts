@@ -21,10 +21,12 @@ export const DEFAULT_USER: User = {
   avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
 };
 
+const initialToken = typeof window !== 'undefined' ? localStorage.getItem('rakshasphere_token') : null;
+
 export const useAuthStore = create<AuthState>((set, get) => ({
-  currentUser: DEFAULT_USER,
-  token: typeof window !== 'undefined' ? localStorage.getItem('rakshasphere_token') : null,
-  isAuthenticated: true,
+  currentUser: initialToken ? DEFAULT_USER : null,
+  token: initialToken,
+  isAuthenticated: Boolean(initialToken),
 
 
   loginAsync: async (username: string, password: string, mfaCode?: string) => {
