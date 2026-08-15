@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Grid3X3, Search, Filter, Layers, ShieldAlert } from 'lucide-react';
-import { MITRE_TACTICS } from '@/data/mockMitre';
+import { MITRE_TACTICS } from '@/data/mitreTactics';
 import { MitreTechnique, Severity } from '@/types';
 import { useAlertStore } from '@/store/useAlertStore';
 import { Modal } from '@/components/ui/Modal';

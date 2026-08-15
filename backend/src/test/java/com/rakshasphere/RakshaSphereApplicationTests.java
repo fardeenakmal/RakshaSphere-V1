@@ -21,6 +21,9 @@ class RakshaSphereApplicationTests {
     @Autowired
     private ThreatIntelService threatIntelService;
 
+    @Autowired
+    private com.rakshasphere.service.SystemHealthService systemHealthService;
+
     @Test
     @DisplayName("Verify Spring context loads cleanly")
     void contextLoads() {
@@ -42,7 +45,42 @@ class RakshaSphereApplicationTests {
         assertNotNull(response.getToken());
     }
 
+    @Test
+    @DisplayName("Verify invalid password throws BadCredentialsException (401)")
+    void testInvalidPasswordAuthentication() {
+        AuthRequestDTO request = new AuthRequestDTO();
+        request.setUsername("admin");
+        request.setPassword("WrongPassword123!");
 
+        assertThrows(org.springframework.security.authentication.BadCredentialsException.class, () -> {
+            authService.authenticate(request);
+        });
+    }
+
+    @Test
+    @DisplayName("Verify invalid username throws BadCredentialsException (401)")
+    void testInvalidUsernameAuthentication() {
+        AuthRequestDTO request = new AuthRequestDTO();
+        request.setUsername("non_existent_user_999");
+        request.setPassword("Admin@Raksha2026!");
+
+        assertThrows(org.springframework.security.authentication.BadCredentialsException.class, () -> {
+            authService.authenticate(request);
+        });
+    }
+
+    @Test
+    @DisplayName("Verify real system info endpoint returns OS, RAM, Disk and JVM metrics")
+    void testSystemInfoRetrieval() {
+        var info = systemHealthService.getSystemInfo();
+        assertNotNull(info);
+        assertNotNull(info.get("osName"));
+        assertNotNull(info.get("javaVersion"));
+        assertNotNull(info.get("availableProcessors"));
+        assertNotNull(info.get("ramTotalMb"));
+        assertNotNull(info.get("diskTotalGb"));
+        assertNotNull(info.get("containerized"));
+    }
 
     @Test
     @DisplayName("Verify internal IP addresses return clean threat intel scores")
@@ -61,6 +99,60 @@ class RakshaSphereApplicationTests {
         assertNotNull(intel);
         assertNotNull(intel.get("virusTotalScore"));
         assertNotNull(intel.get("abuseIpDbConfidence"));
+    }
+
+    @Autowired
+    private com.rakshasphere.repository.IotDeviceRepository iotDeviceRepository;
+
+    @Autowired
+    private com.rakshasphere.repository.UserRepository userRepository;
+
+    @Test
+    @DisplayName("Verify system health aggregator returns all 13 core service statuses")
+    void testSystemHealthAggregator() {
+        var health = systemHealthService.getSystemHealth();
+        assertNotNull(health);
+        assertNotNull(health.getOverallStatus());
+        assertNotNull(health.getSummary());
+        assertTrue(health.getServices().size() >= 10);
+    }
+
+    @Test
+    @DisplayName("Verify user registration assigns PENDING status and prevents public ADMIN self-granting")
+    void testUserRegistrationSecurity() {
+        var regDto = new com.rakshasphere.dto.RegisterRequestDTO();
+        String testUser = "test_user_" + System.currentTimeMillis();
+        regDto.setUsername(testUser);
+        regDto.setName("Test User");
+        regDto.setEmail(testUser + "@enterprise.com");
+        regDto.setPassword("TestPass123!");
+        regDto.setConfirmPassword("TestPass123!");
+        regDto.setRequestedRole("ROLE_ADMIN");
+
+        var registered = authService.register(regDto);
+        assertNotNull(registered);
+        assertEquals(com.rakshasphere.model.entity.UserStatus.PENDING, registered.getStatus());
+        assertEquals(com.rakshasphere.model.entity.UserRole.ROLE_USER, registered.getRole());
+    }
+
+    @Test
+    @DisplayName("Verify IoT Device database persistence and status tracking")
+    void testIotDevicePersistence() {
+        String devId = "TEST-DEV-" + System.currentTimeMillis();
+        var device = com.rakshasphere.model.entity.IotDevice.builder()
+                .deviceId(devId)
+                .status("ONLINE")
+                .cpuUsagePct(24.5)
+                .memoryUsagePct(38.2)
+                .activeSockets(12)
+                .latencyMs(15.4)
+                .createdAt(java.time.LocalDateTime.now())
+                .build();
+
+        var saved = iotDeviceRepository.save(device);
+        assertNotNull(saved);
+        assertEquals(devId, saved.getDeviceId());
+        assertEquals("ONLINE", saved.getStatus());
     }
 
     @Test

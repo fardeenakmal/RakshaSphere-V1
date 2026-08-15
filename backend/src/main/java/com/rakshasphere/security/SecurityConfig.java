@@ -44,7 +44,7 @@ public class SecurityConfig {
                                 "/api/v1/auth/**",
                                 "/api/v1/system/health",
                                 "/api/v1/system/health/**",
-                                "/actuator/**",
+                                "/actuator/health",
                                 "/api/v1/honeypots/events",
                                 "/ws-soc/**",
                                 "/v3/api-docs/**",
