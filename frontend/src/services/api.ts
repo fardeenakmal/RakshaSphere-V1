@@ -3,7 +3,8 @@
  * Target: Spring Boot Core Backend (http://localhost:8080/api/v1)
  */
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api/v1';
+
 
 export async function fetchApi<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const token = typeof window !== 'undefined' ? localStorage.getItem('rakshasphere_token') : null;
@@ -90,6 +91,12 @@ export const apiService = {
 
   async deployHoneypot(service: string = 'SSH', attackerIp: string = '185.220.101.99') {
     return fetchApi<any>(`/honeypots/deploy?service=${encodeURIComponent(service)}&attackerIp=${encodeURIComponent(attackerIp)}`, {
+      method: 'POST',
+    });
+  },
+
+  async stopHoneypot(id: string) {
+    return fetchApi<any>(`/honeypots/${id}/stop`, {
       method: 'POST',
     });
   },
@@ -183,5 +190,14 @@ export const apiService = {
       method: 'POST',
       body: JSON.stringify({ flows }),
     });
+  },
+
+  // Real-Time System Health Endpoint
+  async getSystemHealth() {
+    return fetchApi<any>('/system/health');
+  },
+
+  async getSystemInfo() {
+    return fetchApi<any>('/system/info');
   },
 };

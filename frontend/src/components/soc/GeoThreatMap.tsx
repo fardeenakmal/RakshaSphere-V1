@@ -16,9 +16,8 @@ interface GeoThreatMapProps {
   alerts: Alert[];
 }
 
-// A simple mock function to map countries to coordinates for demonstration
 const getCoordinatesForCountry = (country: string | undefined): [number, number] => {
-  if (!country) return [0, 0];
+  if (!country) return [20.0, 0.0];
   const map: Record<string, [number, number]> = {
     'US (United States)': [37.0902, -95.7129],
     'CN (China)': [35.8617, 104.1954],
@@ -28,8 +27,26 @@ const getCoordinatesForCountry = (country: string | undefined): [number, number]
     'BR (Brazil)': [-14.235, -51.9253],
     'IN (India)': [20.5937, 78.9629],
     'FR (France)': [46.2276, 2.2137],
+    'UA (Ukraine)': [48.3794, 31.1656]
   };
-  return map[country] || [(Math.random() - 0.5) * 160, (Math.random() - 0.5) * 360];
+  
+  // Find key substring match if full string isn't exact
+  for (const [key, coords] of Object.entries(map)) {
+    if (country.toLowerCase().includes(key.toLowerCase().split(' ')[0])) {
+      return coords;
+    }
+  }
+  return [20.0, 0.0];
+};
+
+const getDeterministicOffset = (ip: string): [number, number] => {
+  let hash = 0;
+  for (let i = 0; i < ip.length; i++) {
+    hash = (hash * 31 + ip.charCodeAt(i)) & 0xffff;
+  }
+  const latOffset = ((hash % 15) - 7) * 0.15;
+  const lngOffset = (((hash >> 4) % 15) - 7) * 0.15;
+  return [latOffset, lngOffset];
 };
 
 export const GeoThreatMap: React.FC<GeoThreatMapProps> = ({ alerts }) => {
@@ -73,10 +90,10 @@ export const GeoThreatMap: React.FC<GeoThreatMapProps> = ({ alerts }) => {
           />
           {recentAlerts.map(alert => {
             const coords = getCoordinatesForCountry(alert.threatIntel?.country);
-            // Slight random offset to prevent exact overlap
+            const offset = getDeterministicOffset(alert.sourceIp || alert.id);
             const offsetCoords: [number, number] = [
-              coords[0] + (Math.random() - 0.5) * 2,
-              coords[1] + (Math.random() - 0.5) * 2
+              coords[0] + offset[0],
+              coords[1] + offset[1]
             ];
 
             return (

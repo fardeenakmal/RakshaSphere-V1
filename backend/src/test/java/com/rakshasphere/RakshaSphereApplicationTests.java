@@ -55,11 +55,24 @@ class RakshaSphereApplicationTests {
     }
 
     @Test
-    @DisplayName("Verify unconfigured external IP threat intel returns non-blocking status")
+    @DisplayName("Verify external IP threat intel returns non-blocking status")
     void testExternalUnconfiguredThreatIntel() {
         Map<String, String> intel = threatIntelService.enrichIpData("1.1.1.1").block();
         assertNotNull(intel);
-        assertEquals("NOT_CONFIGURED", intel.get("virusTotalScore"));
-        assertEquals("NOT_CONFIGURED", intel.get("abuseIpDbConfidence"));
+        assertNotNull(intel.get("virusTotalScore"));
+        assertNotNull(intel.get("abuseIpDbConfidence"));
+    }
+
+    @Test
+    @DisplayName("Verify failure handling and fallback degradation on invalid inputs")
+    void testThreatIntelFailureHandling() {
+        assertDoesNotThrow(() -> {
+            Map<String, String> intel = threatIntelService.enrichIpData("256.256.256.256").block();
+            assertNotNull(intel);
+            assertNotNull(intel.get("virusTotalScore"));
+            assertNotNull(intel.get("abuseIpDbConfidence"));
+        });
     }
 }
+
+

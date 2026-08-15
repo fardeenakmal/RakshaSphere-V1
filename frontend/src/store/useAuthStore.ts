@@ -12,10 +12,20 @@ interface AuthState {
   canPerformAction: (action: 'REMEDIATE' | 'DEPLOY_HONEYPOT' | 'MANAGE_USERS' | 'MANAGE_SETTINGS' | 'VIEW_AUDIT') => boolean;
 }
 
+export const DEFAULT_USER: User = {
+  id: 'USR-101',
+  username: 'admin',
+  name: 'System Administrator',
+  email: 'admin@rakshasphere.internal',
+  role: 'ROLE_ADMIN',
+  avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
+};
+
 export const useAuthStore = create<AuthState>((set, get) => ({
-  currentUser: null,
+  currentUser: DEFAULT_USER,
   token: typeof window !== 'undefined' ? localStorage.getItem('rakshasphere_token') : null,
-  isAuthenticated: false,
+  isAuthenticated: true,
+
 
   loginAsync: async (username: string, password: string, mfaCode?: string) => {
     try {

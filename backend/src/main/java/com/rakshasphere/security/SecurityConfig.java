@@ -40,13 +40,17 @@ public class SecurityConfig {
                 .cors(cors -> {})
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher("/api/v1/auth/**")).permitAll()
-                        .requestMatchers(org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher("/api/v1/honeypots/events")).permitAll()
-                        .requestMatchers(org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher("/ws-soc/**")).permitAll()
-                        .requestMatchers(org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher("/actuator/**")).permitAll()
-                        .requestMatchers(org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher("/v3/api-docs/**")).permitAll()
-                        .requestMatchers(org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher("/swagger-ui/**")).permitAll()
-                        .anyRequest().authenticated() // Enforce authentication for all other endpoints
+                        .requestMatchers(
+                                "/api/v1/auth/**",
+                                "/api/v1/system/health",
+                                "/api/v1/system/health/**",
+                                "/actuator/**",
+                                "/api/v1/honeypots/events",
+                                "/ws-soc/**",
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**"
+                        ).permitAll()
+                        .anyRequest().authenticated()
                 )
 
 

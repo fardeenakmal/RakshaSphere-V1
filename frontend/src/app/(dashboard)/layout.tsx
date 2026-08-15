@@ -23,9 +23,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <Navbar />
 
         {/* Dynamic Route Page Container */}
-        <main className="flex-1 p-4 md:p-6 lg:p-8 max-w-7xl w-full mx-auto space-y-6">
+        <main className="flex-1 p-4 md:p-6 lg:p-8 max-w-7xl w-full mx-auto space-y-6 overflow-x-hidden">
           {children}
         </main>
+
       </div>
     </div>
   );

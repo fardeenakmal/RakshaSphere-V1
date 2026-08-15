@@ -4,7 +4,8 @@ services:
   database:
     image: mysql:8.0
     container_name: raksha-mysql
-    network_mode: host
+    ports:
+      - "3307:3306"
     env_file:
       - ../.env
     environment:
@@ -57,7 +58,7 @@ services:
     env_file:
       - ../.env
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3306/${MYSQL_DATABASE:-rakshaspheredb}?useSSL=false&allowPublicKeyRetrieval=true
+      - SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3307/${MYSQL_DATABASE:-rakshaspheredb}?useSSL=false&allowPublicKeyRetrieval=true
       - SPRING_DATASOURCE_DRIVER_CLASS_NAME=com.mysql.cj.jdbc.Driver
       - SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.MySQLDialect
       - SPRING_DATASOURCE_USERNAME=${MYSQL_USER:-raksha_user}
@@ -70,6 +71,8 @@ services:
       - RATE_LIMIT_MAX_REQUESTS=${RATE_LIMIT_MAX_REQUESTS:-100}
       - HONEYPOT_MANAGER_URL=http://localhost:6000
       - HONEYPOT_MANAGER_API_KEY=${HONEYPOT_MANAGER_API_KEY:-changeme}
+    volumes:
+      - ./backups:/backups
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
       interval: 15s
@@ -147,7 +150,7 @@ services:
       - LOG_DIR=/logs
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - cowrie-logs:/logs
+      - /logs:/logs
     depends_on:
       - backend
     healthcheck:

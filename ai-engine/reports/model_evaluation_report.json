@@ -1,0 +1,37 @@
+{
+  "reportTitle": "RakshaSphere AI Engine V1 Model Evaluation Report",
+  "evaluationTimestamp": "2026-08-14T20:38:30Z",
+  "modelType": "RandomForestClassifier",
+  "datasetType": "SYNTHETIC_DATA",
+  "datasetNote": "Evaluated on independent synthetic test set generated via Gaussian class distributions. High performance reflects synthetic cluster separability.",
+  "totalTestSamples": 2500,
+  "samplesPerClass": 500,
+  "metrics": {
+    "accuracy": 1.0,
+    "precisionMacro": 1.0,
+    "precisionWeighted": 1.0,
+    "recallMacro": 1.0,
+    "recallWeighted": 1.0,
+    "f1Macro": 1.0,
+    "f1Weighted": 1.0,
+    "rocAucMacroOvr": 1.0,
+    "rocAucWeightedOvr": 1.0
+  },
+  "confusionMatrix": {
+    "labels": ["BENIGN", "SSH_BRUTE_FORCE", "HTTP_SQL_INJECTION", "TELNET_MIRAI", "DDoS_SYN_FLOOD"],
+    "matrix": [
+      [500, 0, 0, 0, 0],
+      [0, 500, 0, 0, 0],
+      [0, 0, 500, 0, 0],
+      [0, 0, 0, 500, 0],
+      [0, 0, 0, 0, 500]
+    ]
+  },
+  "perClassMetrics": {
+    "BENIGN": {"precision": 1.0, "recall": 1.0, "f1": 1.0},
+    "SSH_BRUTE_FORCE": {"precision": 1.0, "recall": 1.0, "f1": 1.0},
+    "HTTP_SQL_INJECTION": {"precision": 1.0, "recall": 1.0, "f1": 1.0},
+    "TELNET_MIRAI": {"precision": 1.0, "recall": 1.0, "f1": 1.0},
+    "DDoS_SYN_FLOOD": {"precision": 1.0, "recall": 1.0, "f1": 1.0}
+  }
+}

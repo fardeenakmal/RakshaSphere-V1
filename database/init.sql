@@ -2,9 +2,12 @@
 -- Usage: mysql -u root -p < database/init.sql
 
 CREATE DATABASE IF NOT EXISTS rakshaspheredb DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
-CREATE USER IF NOT EXISTS 'raksha_user'@'%' IDENTIFIED BY 'change_this_user_password';
-CREATE USER IF NOT EXISTS 'raksha_user'@'localhost' IDENTIFIED BY 'change_this_user_password';
-CREATE USER IF NOT EXISTS 'raksha_user'@'127.0.0.1' IDENTIFIED BY 'change_this_user_password';
+CREATE USER IF NOT EXISTS 'raksha_user'@'%' IDENTIFIED WITH mysql_native_password BY 'change_this_user_password';
+CREATE USER IF NOT EXISTS 'raksha_user'@'localhost' IDENTIFIED WITH mysql_native_password BY 'change_this_user_password';
+CREATE USER IF NOT EXISTS 'raksha_user'@'127.0.0.1' IDENTIFIED WITH mysql_native_password BY 'change_this_user_password';
+ALTER USER 'raksha_user'@'%' IDENTIFIED WITH mysql_native_password BY 'change_this_user_password';
+ALTER USER 'raksha_user'@'localhost' IDENTIFIED WITH mysql_native_password BY 'change_this_user_password';
+ALTER USER 'raksha_user'@'127.0.0.1' IDENTIFIED WITH mysql_native_password BY 'change_this_user_password';
 GRANT ALL PRIVILEGES ON rakshaspheredb.* TO 'raksha_user'@'%';
 GRANT ALL PRIVILEGES ON rakshaspheredb.* TO 'raksha_user'@'localhost';
 GRANT ALL PRIVILEGES ON rakshaspheredb.* TO 'raksha_user'@'127.0.0.1';

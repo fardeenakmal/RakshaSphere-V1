@@ -116,6 +116,13 @@
             <artifactId>totp-spring-boot-starter</artifactId>
             <version>1.7.1</version>
         </dependency>
+
+        <!-- Eclipse Paho MQTT Client for IoT Telemetry -->
+        <dependency>
+            <groupId>org.eclipse.paho</groupId>
+            <artifactId>org.eclipse.paho.client.mqttv3</artifactId>
+            <version>1.2.5</version>
+        </dependency>
     </dependencies>
 
     <build>

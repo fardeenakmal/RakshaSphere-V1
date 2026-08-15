@@ -111,6 +111,8 @@ class IoTAgentDaemon:
                 except AttributeError:
                     self.mqtt_client = mqtt.Client(client_id=client_id)
 
+                self.mqtt_client.username_pw_set(self.device_id)
+
                 def on_connect(client, userdata, flags, rc, properties=None):
                     print(f"✅ [MQTT Broker Connected] Connected to {self.mqtt_broker}:{self.mqtt_port}")
                     client.subscribe(self.command_topic, qos=1)

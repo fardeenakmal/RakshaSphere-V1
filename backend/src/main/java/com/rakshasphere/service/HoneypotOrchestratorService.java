@@ -1,8 +1,12 @@
 package com.rakshasphere.service;
 
 import com.rakshasphere.dto.HoneypotEventDTO;
+import com.rakshasphere.model.entity.AlertSeverity;
+import com.rakshasphere.model.entity.AlertStatus;
 import com.rakshasphere.model.entity.HoneypotEvent;
 import com.rakshasphere.model.entity.HoneypotSession;
+import com.rakshasphere.model.entity.SecurityAlert;
+
 import com.rakshasphere.repository.HoneypotEventRepository;
 import com.rakshasphere.repository.HoneypotSessionRepository;
 import org.slf4j.Logger;
@@ -31,7 +35,11 @@ public class HoneypotOrchestratorService {
     private HoneypotEventRepository eventRepository;
 
     @Autowired
+    private SecurityAlertService securityAlertService;
+
+    @Autowired
     private SimpMessagingTemplate messagingTemplate;
+
 
     @Value("${rakshasphere.honeypot.manager-url:http://localhost:6000}")
     private String managerUrl;
@@ -276,8 +284,53 @@ public class HoneypotOrchestratorService {
             logger.warn("Failed to broadcast honeypot event via STOMP: {}", e.getMessage());
         }
 
+        // Generate SecurityAlert record for meaningful events (Phase 7 Risk Engine & Phase 8 Threat Intel)
+        String eventType = dto.getEventType() != null ? dto.getEventType() : "";
+        if (eventType.contains("SSH_LOGIN_SUCCESS") || eventType.contains("login.success") ||
+            eventType.contains("COMMAND") || eventType.contains("file_download")) {
+
+            AlertSeverity severity = (eventType.contains("SSH_LOGIN_SUCCESS") || eventType.contains("file_download"))
+                    ? AlertSeverity.HIGH
+                    : AlertSeverity.MEDIUM;
+
+            String attackType = eventType.contains("SSH_LOGIN_SUCCESS")
+                    ? "Deception Sandbox Breach (SSH Success)"
+                    : "Honeypot Command Execution Probe";
+
+            String mitre = eventType.contains("SSH_LOGIN_SUCCESS")
+                    ? "T1078 (Valid Accounts)"
+                    : "T1059 (Command-Line Interface)";
+
+            SecurityAlert alert = SecurityAlert.builder()
+                    .id("ALT-HP-" + UUID.randomUUID().toString().substring(0, 8))
+                    .timestamp(finalEventTime)
+                    .sourceIp(dto.getSourceIp() != null && !dto.getSourceIp().isEmpty() ? dto.getSourceIp() : "185.220.101.99")
+                    .destinationIp("172.30.0.2")
+                    .sourcePort(dto.getSourcePort() != null ? dto.getSourcePort() : 51234)
+                    .destinationPort(2222)
+                    .attackType(attackType)
+                    .severity(severity)
+                    .riskScore(eventType.contains("SSH_LOGIN_SUCCESS") ? 90 : 70)
+                    .confidence(0.95)
+                    .mitreTactic("Initial Access / Deception Probe")
+                    .mitreTechnique(mitre)
+                    .mitreId(eventType.contains("SSH_LOGIN_SUCCESS") ? "T1078" : "T1059")
+                    .status(AlertStatus.ACTIVE)
+                    .remediationAction("Captured in Deception Sandbox")
+                    .build();
+
+
+            try {
+                securityAlertService.saveAndBroadcastAlert(alert);
+                logger.info("Generated and enriched SecurityAlert {} for honeypot event {}", alert.getId(), eventType);
+            } catch (Exception e) {
+                logger.warn("Failed to generate security alert for honeypot event: {}", e.getMessage());
+            }
+        }
+
         return saved;
     }
+
 
     // ──────────────────────────────────────────────────────────
     // GET events for a session

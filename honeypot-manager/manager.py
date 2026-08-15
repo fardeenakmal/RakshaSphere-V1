@@ -339,6 +339,18 @@ async def deploy_honeypot(
     # Create a per-container log directory on the shared volume
     container_log_dir = LOG_DIR / container_name
     container_log_dir.mkdir(parents=True, exist_ok=True)
+    try:
+        # Set ownership for cowrie non-root user (supports both UID 1000 and UID 999)
+        for id_val in (1000, 999):
+            try:
+                os.chown(container_log_dir, id_val, id_val)
+                for p in container_log_dir.glob("**/*"):
+                    os.chown(p, id_val, id_val)
+            except Exception:
+                pass
+        os.chmod(container_log_dir, 0o775)
+    except Exception as e:
+        logger.warning(f"Could not set ownership/permissions on {container_log_dir}: {e}")
 
     try:
         container = client.containers.run(
