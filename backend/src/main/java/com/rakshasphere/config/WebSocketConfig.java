@@ -69,17 +69,22 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                                         userDetails, null, userDetails.getAuthorities()
                                 );
                                 accessor.setUser(authentication);
-                                logger.info("STOMP authentication successful for user: " + username);
+                                logger.info(String.format("STOMP AUTH SUCCESS: user=%s, authorities=%s", username, userDetails.getAuthorities()));
                             } else {
+                                logger.warn("STOMP AUTH FAIL: Invalid or expired JWT token");
                                 throw new IllegalArgumentException("Invalid JWT token");
                             }
                         } catch (Exception e) {
-                            logger.error("STOMP authentication failed", e);
+                            logger.error("STOMP AUTH FAIL: Exception during token validation", e);
                             throw new IllegalArgumentException("Authentication Failed");
                         }
                     } else {
+                        logger.warn("STOMP AUTH FAIL: Missing Authorization header in STOMP CONNECT");
                         throw new IllegalArgumentException("No valid Authorization header found in STOMP CONNECT");
                     }
+                } else if (StompCommand.SUBSCRIBE.equals(accessor.getCommand())) {
+                    logger.info(String.format("STOMP SUBSCRIBE: destination=%s, user=%s",
+                            accessor.getDestination(), accessor.getUser() != null ? accessor.getUser().getName() : "ANONYMOUS"));
                 }
                 return message;
             }
