@@ -33,19 +33,36 @@ public class SecurityConfig {
         return authConfig.getAuthenticationManager();
     }
 
+    @Autowired
+    private org.springframework.web.cors.CorsConfigurationSource corsConfigurationSource;
+
+    private void addCorsHeaders(jakarta.servlet.http.HttpServletRequest request, jakarta.servlet.http.HttpServletResponse response) {
+        String origin = request.getHeader("Origin");
+        if (origin != null && (origin.equals("https://raksha-sphere-version10.vercel.app")
+                || origin.matches("https://raksha-sphere-.*\\.vercel\\.app")
+                || origin.startsWith("http://localhost:")
+                || origin.startsWith("https://localhost:"))) {
+            response.setHeader("Access-Control-Allow-Origin", origin);
+            response.setHeader("Access-Control-Allow-Credentials", "true");
+            response.setHeader("Vary", "Origin");
+        }
+    }
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
-                .cors(cors -> {})
+                .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(exceptions -> exceptions
                         .authenticationEntryPoint((request, response, authException) -> {
+                            addCorsHeaders(request, response);
                             response.setStatus(jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED);
                             response.setContentType("application/json");
                             response.getWriter().write("{\"status\":\"ERROR\",\"message\":\"Unauthorized: Invalid or missing authentication token\"}");
                         })
                         .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            addCorsHeaders(request, response);
                             response.setStatus(jakarta.servlet.http.HttpServletResponse.SC_FORBIDDEN);
                             response.setContentType("application/json");
                             response.getWriter().write("{\"status\":\"ERROR\",\"message\":\"Forbidden: Insufficient privileges for this resource\"}");
@@ -60,7 +77,8 @@ public class SecurityConfig {
                                 "/api/v1/honeypots/events",
                                 "/ws-soc/**",
                                 "/v3/api-docs/**",
-                                "/swagger-ui/**"
+                                "/swagger-ui/**",
+                                "/error"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
