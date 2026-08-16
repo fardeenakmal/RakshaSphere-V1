@@ -132,6 +132,7 @@ public class SystemHealthService {
                     }
                 }
                 case "SIMULATED" -> simulatedCount++;
+                case "NOT_DEPLOYED", "NOT DEPLOYED" -> unknownCount++;
                 default -> unknownCount++;
             }
         }

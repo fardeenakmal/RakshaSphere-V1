@@ -133,6 +133,16 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
       };
       break;
 
+    case 'NOT_DEPLOYED':
+    case 'NOT DEPLOYED':
+      styleConfig = {
+        bg: 'bg-slate-800 text-slate-400 border-slate-700',
+        dot: 'bg-slate-500',
+        icon: Info,
+        label: 'NOT DEPLOYED'
+      };
+      break;
+
     case 'ACTIVE':
       styleConfig = {
         bg: 'bg-red-500/10 text-red-400 border-red-500/30 animate-pulse',

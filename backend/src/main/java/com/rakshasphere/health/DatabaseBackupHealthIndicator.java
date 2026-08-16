@@ -55,7 +55,7 @@ public class DatabaseBackupHealthIndicator implements HealthIndicator {
 
         if (backupDir == null) {
             details.put("backupFileExists", false);
-            details.put("issue", "Backup directory does not exist or is not readable");
+            details.put("issue", "Persistent backup storage is not configured");
             return Health.status(CustomHealthStatuses.DEGRADED)
                     .withDetails(details)
                     .build();

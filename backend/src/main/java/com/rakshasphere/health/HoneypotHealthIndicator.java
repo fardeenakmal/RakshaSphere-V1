@@ -30,9 +30,16 @@ public class HoneypotHealthIndicator implements HealthIndicator {
 
     @Override
     public Health health() {
+        if (managerUrl == null || managerUrl.trim().isEmpty() || "NOT_CONFIGURED".equalsIgnoreCase(managerUrl.trim())) {
+            return Health.status(CustomHealthStatuses.NOT_DEPLOYED)
+                    .withDetail("service", "RakshaSphere Honeypot Subsystem")
+                    .withDetail("issue", "Production honeypot manager is not configured (requires VPS host)")
+                    .build();
+        }
+
         long start = System.currentTimeMillis();
         try {
-            String healthUrl = managerUrl + "/health";
+            String healthUrl = managerUrl + (managerUrl.endsWith("/") ? "health" : "/health");
             Map<String, Object> response = restTemplate.getForObject(healthUrl, Map.class);
             long latencyMs = System.currentTimeMillis() - start;
 
@@ -69,9 +76,10 @@ public class HoneypotHealthIndicator implements HealthIndicator {
         } catch (Exception e) {
             long latencyMs = System.currentTimeMillis() - start;
             log.warn("Honeypot Manager health check failed: {}", e.getMessage());
-            return Health.status(CustomHealthStatuses.DOWN)
+            return Health.status(CustomHealthStatuses.NOT_DEPLOYED)
                     .withDetail("service", "RakshaSphere Honeypot Subsystem")
                     .withDetail("latencyMs", latencyMs)
+                    .withDetail("issue", "Production honeypot manager is not configured (requires VPS host)")
                     .withDetail("error", e.getMessage())
                     .build();
         }
