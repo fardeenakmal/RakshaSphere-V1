@@ -40,8 +40,26 @@ export async function fetchApi<T>(endpoint: string, options: RequestInit = {}): 
     }
 
     if (!res.ok) {
-      const errorText = await res.text().catch(() => 'API Error');
-      throw new Error(`HTTP ${res.status}: ${errorText}`);
+      let errorMsg = `HTTP ${res.status}`;
+      try {
+        const contentType = res.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+          const jsonErr = await res.json();
+          errorMsg = jsonErr.message || jsonErr.error || errorMsg;
+        } else {
+          const rawText = await res.text();
+          if (rawText.startsWith('<') || rawText.includes('<!DOCTYPE')) {
+            errorMsg = res.status === 404
+              ? 'Backend API endpoint not found or service unavailable (HTTP 404)'
+              : `Backend service error (HTTP ${res.status})`;
+          } else {
+            errorMsg = rawText.slice(0, 150) || errorMsg;
+          }
+        }
+      } catch (e) {
+        // fallback to HTTP status
+      }
+      throw new Error(errorMsg);
     }
 
     const json = await res.json();
@@ -66,7 +84,11 @@ export const apiService = {
   },
 
   async getCurrentUser() {
-    return fetchApi<any>('/auth/me');
+    try {
+      return await fetchApi<any>('/auth/me');
+    } catch (err) {
+      return null;
+    }
   },
 
   async register(data: { username: string; name: string; email: string; password: string; confirmPassword: string; requestedRole?: string }) {
