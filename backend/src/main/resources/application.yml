@@ -31,8 +31,13 @@ spring:
   # Redis Configuration
   data:
     redis:
-      host: ${SPRING_REDIS_HOST:localhost}
-      port: ${SPRING_REDIS_PORT:6379}
+      url: ${SPRING_REDIS_URL:${REDIS_URL:}}
+      host: ${SPRING_REDIS_HOST:${REDIS_HOST:localhost}}
+      port: ${SPRING_REDIS_PORT:${REDIS_PORT:6379}}
+      username: ${SPRING_REDIS_USERNAME:${REDIS_USERNAME:}}
+      password: ${SPRING_REDIS_PASSWORD:${REDIS_PASSWORD:}}
+      ssl:
+        enabled: ${SPRING_REDIS_SSL_ENABLED:${REDIS_SSL_ENABLED:false}}
       timeout: 5000
 
 # JWT Configuration
@@ -40,6 +45,8 @@ rakshasphere:
   jwt:
     secret: ${JWT_SECRET}
     expiration-ms: ${JWT_EXPIRATION_MS:86400000} # 24 Hours
+  ai:
+    url: ${RAKSHASPHERE_AI_URL:${AI_ENGINE_URL:${rakshasphere.ai.url:http://localhost:5000}}}
   honeypot:
     manager-url: ${HONEYPOT_MANAGER_URL:http://localhost:6000}
     manager-api-key: ${HONEYPOT_MANAGER_API_KEY:changeme}
