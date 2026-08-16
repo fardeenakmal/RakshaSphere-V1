@@ -27,6 +27,7 @@ public class CorsConfig {
         String cleanFrontendUrl = frontendUrl != null ? frontendUrl.replaceAll("/+$", "") : "";
 
         List<String> allowedOrigins = new ArrayList<>(Arrays.asList(
+            "https://raksha-sphere-v1.vercel.app",
             "https://raksha-sphere-version10.vercel.app",
             "https://raksha-sphere-*.vercel.app",
             "http://localhost:3000",

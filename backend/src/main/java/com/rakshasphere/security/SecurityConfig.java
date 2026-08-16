@@ -38,7 +38,8 @@ public class SecurityConfig {
 
     private void addCorsHeaders(jakarta.servlet.http.HttpServletRequest request, jakarta.servlet.http.HttpServletResponse response) {
         String origin = request.getHeader("Origin");
-        if (origin != null && (origin.equals("https://raksha-sphere-version10.vercel.app")
+        if (origin != null && (origin.equals("https://raksha-sphere-v1.vercel.app")
+                || origin.equals("https://raksha-sphere-version10.vercel.app")
                 || origin.matches("https://raksha-sphere-.*\\.vercel\\.app")
                 || origin.startsWith("http://localhost:")
                 || origin.startsWith("https://localhost:"))) {
