@@ -19,6 +19,20 @@ import { useHealthStore } from '@/store/useHealthStore';
 import { Button } from '@/components/ui/Button';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 
+const cleanErrorMessage = (msg: any): string => {
+  if (typeof msg !== 'string') return String(msg || '');
+  if (msg.includes('<html') || msg.includes('<!DOCTYPE') || msg.includes('<head')) {
+    if (msg.includes('502 Bad Gateway')) return 'AI Inference Microservice Unreachable (HTTP 502 Bad Gateway / Connection Timeout)';
+    if (msg.includes('504 Gateway Timeout')) return 'AI Inference Microservice Connection Timeout (HTTP 504)';
+    if (msg.includes('404')) return 'AI Inference Microservice Endpoint Not Found (HTTP 404)';
+    return 'Service returned an invalid HTML error response';
+  }
+  if (msg.length > 200) {
+    return msg.substring(0, 200) + '...';
+  }
+  return msg;
+};
+
 export default function SystemHealthPage() {
   const {
     healthData,
@@ -313,7 +327,7 @@ export default function SystemHealthPage() {
                               <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
                               <div>
                                 <span className="font-bold block text-[11px]">OPERATIONAL ISSUE</span>
-                                <span className="text-[11px] leading-relaxed">{details.issue}</span>
+                                <span className="text-[11px] leading-relaxed">{cleanErrorMessage(details.issue)}</span>
                               </div>
                             </div>
                           )}
@@ -323,7 +337,7 @@ export default function SystemHealthPage() {
                               <XCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
                               <div>
                                 <span className="font-bold block text-[11px]">REASON / FAILURE</span>
-                                <span className="text-[11px] leading-relaxed">{details.error}</span>
+                                <span className="text-[11px] leading-relaxed">{cleanErrorMessage(details.error)}</span>
                               </div>
                             </div>
                           )}

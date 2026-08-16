@@ -62,12 +62,26 @@ public class AiEngineHealthIndicator implements HealthIndicator {
             }
         } catch (Exception e) {
             long latencyMs = System.currentTimeMillis() - start;
-            log.warn("AI Engine health check failed: {}", e.getMessage());
+            String cleanMsg = sanitizeError(e.getMessage());
+            log.warn("AI Engine health check failed: {}", cleanMsg);
             return Health.status(CustomHealthStatuses.DOWN)
                     .withDetail("service", "RakshaSphere AI Inference Engine")
                     .withDetail("latencyMs", latencyMs)
-                    .withDetail("error", e.getMessage())
+                    .withDetail("error", cleanMsg)
                     .build();
         }
+    }
+
+    private String sanitizeError(String rawMsg) {
+        if (rawMsg == null || rawMsg.isBlank()) {
+            return "AI Inference Engine service unreachable";
+        }
+        if (rawMsg.contains("<html") || rawMsg.contains("<!DOCTYPE") || rawMsg.contains("502 Bad Gateway")) {
+            return "AI Inference Engine service unreachable (HTTP 502 Bad Gateway / Connection Refused)";
+        }
+        if (rawMsg.length() > 200) {
+            return rawMsg.substring(0, 200) + "...";
+        }
+        return rawMsg;
     }
 }
