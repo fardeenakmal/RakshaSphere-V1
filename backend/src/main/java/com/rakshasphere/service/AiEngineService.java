@@ -19,9 +19,16 @@ public class AiEngineService {
     private final WebClient webClient;
 
     public AiEngineService(WebClient.Builder webClientBuilder,
-                           @Value("${rakshasphere.ai.url:http://localhost:5000}") String aiEngineUrl) {
-        this.webClient = webClientBuilder.baseUrl(aiEngineUrl).build();
-        log.info("Initialized AiEngineService target URL: {}", aiEngineUrl);
+                           @Value("${rakshasphere.ai.url:${RAKSHASPHERE_AI_URL:${AI_ENGINE_URL:https://rakshasphere-v1-1.onrender.com}}}") String aiEngineUrl) {
+        String cleanUrl = (aiEngineUrl != null ? aiEngineUrl.trim() : "")
+                .replaceAll("/+$", "")
+                .replaceAll("/health$", "")
+                .replaceAll("/predict$", "");
+        if (cleanUrl.isBlank()) {
+            cleanUrl = "https://rakshasphere-v1-1.onrender.com";
+        }
+        this.webClient = webClientBuilder.baseUrl(cleanUrl).build();
+        log.info("Initialized AiEngineService target URL: {}", cleanUrl);
     }
 
     public Map getHealth() {

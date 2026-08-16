@@ -16,15 +16,15 @@ public class AiEngineHealthIndicator implements HealthIndicator {
 
     private static final Logger log = LoggerFactory.getLogger(AiEngineHealthIndicator.class);
 
-    @Value("${rakshasphere.ai.url:http://localhost:5000}")
+    @Value("${rakshasphere.ai.url:${RAKSHASPHERE_AI_URL:${AI_ENGINE_URL:https://rakshasphere-v1-1.onrender.com}}}")
     private String aiEngineUrl;
 
     private final RestTemplate restTemplate;
 
     public AiEngineHealthIndicator() {
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
-        factory.setConnectTimeout(2000);
-        factory.setReadTimeout(2000);
+        factory.setConnectTimeout(5000);
+        factory.setReadTimeout(5000);
         this.restTemplate = new RestTemplate(factory);
     }
 
@@ -32,7 +32,15 @@ public class AiEngineHealthIndicator implements HealthIndicator {
     public Health health() {
         long start = System.currentTimeMillis();
         try {
-            String healthUrl = aiEngineUrl + "/health";
+            String cleanUrl = (aiEngineUrl != null ? aiEngineUrl.trim() : "")
+                    .replaceAll("/+$", "")
+                    .replaceAll("/health$", "")
+                    .replaceAll("/predict$", "");
+            if (cleanUrl.isBlank()) {
+                cleanUrl = "https://rakshasphere-v1-1.onrender.com";
+            }
+
+            String healthUrl = cleanUrl + "/health";
             Map<String, Object> response = restTemplate.getForObject(healthUrl, Map.class);
             long latencyMs = System.currentTimeMillis() - start;
 
