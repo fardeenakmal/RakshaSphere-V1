@@ -26,10 +26,10 @@ import { StatusBadge } from '@/components/ui/StatusBadge';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { loginAsync } = useAuthStore();
+  const { loginAsync, isAuthenticated, isInitializing, initializeAuth } = useAuthStore();
 
-  const [username, setUsername] = useState('admin');
-  const [password, setPassword] = useState('Admin@Raksha2026!');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
@@ -53,18 +53,26 @@ export default function LoginPage() {
   const [requiresMfa, setRequiresMfa] = useState(false);
   const [mfaCode, setMfaCode] = useState('');
 
-  // Quick Role Testers
+  React.useEffect(() => {
+    initializeAuth();
+  }, [initializeAuth]);
+
+  React.useEffect(() => {
+    if (!isInitializing && isAuthenticated) {
+      router.replace('/dashboard');
+    }
+  }, [isInitializing, isAuthenticated, router]);
+
+  // Quick Role Username Selectors (Populates username only, password remains empty)
   const handleQuickRoleSelect = (role: 'ADMIN' | 'ANALYST' | 'USER') => {
     if (role === 'ADMIN') {
       setUsername('admin');
-      setPassword('Admin@Raksha2026!');
     } else if (role === 'ANALYST') {
       setUsername('analyst_mike');
-      setPassword('Analyst@Raksha2026!');
     } else {
       setUsername('user');
-      setPassword('User@Raksha2026!');
     }
+    setPassword('');
   };
 
   const getPasswordStrength = (pass: string) => {
@@ -89,7 +97,7 @@ export default function LoginPage() {
     setErrorMsg('');
 
     try {
-      await loginAsync(username, password, requiresMfa ? mfaCode : undefined);
+      await loginAsync(username, password, requiresMfa ? mfaCode : undefined, rememberMe);
       router.push('/dashboard');
     } catch (err: any) {
       console.error("Login failed:", err);
@@ -212,6 +220,7 @@ export default function LoginPage() {
               <UserIcon className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
               <input
                 type="text"
+                autoComplete="username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
@@ -236,6 +245,7 @@ export default function LoginPage() {
               <Lock className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
               <input
                 type={showPassword ? 'text' : 'password'}
+                autoComplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required

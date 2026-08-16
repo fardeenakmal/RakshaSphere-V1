@@ -70,7 +70,10 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/api/v1/auth/**",
+                                "/api/v1/auth/login",
+                                "/api/v1/auth/register",
+                                "/api/v1/auth/mfa/setup",
+                                "/api/v1/auth/mfa/verify",
                                 "/api/v1/system/health",
                                 "/api/v1/system/health/**",
                                 "/actuator/health",

@@ -6,30 +6,63 @@ interface AuthState {
   currentUser: User | null;
   token: string | null;
   isAuthenticated: boolean;
-  loginAsync: (username: string, password: string, mfaCode?: string) => Promise<boolean>;
+  isInitializing: boolean;
+  initializeAuth: () => Promise<boolean>;
+  loginAsync: (username: string, password: string, mfaCode?: string, rememberMe?: boolean) => Promise<boolean>;
   logout: () => void;
   hasRole: (role: UserRole) => boolean;
   canPerformAction: (action: 'REMEDIATE' | 'DEPLOY_HONEYPOT' | 'MANAGE_USERS' | 'MANAGE_SETTINGS' | 'VIEW_AUDIT') => boolean;
 }
 
-export const DEFAULT_USER: User = {
-  id: 'USR-101',
-  username: 'admin',
-  name: 'System Administrator',
-  email: 'admin@rakshasphere.internal',
-  role: 'ROLE_ADMIN',
-  avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
-};
-
-const initialToken = typeof window !== 'undefined' ? localStorage.getItem('rakshasphere_token') : null;
-
 export const useAuthStore = create<AuthState>((set, get) => ({
-  currentUser: initialToken ? DEFAULT_USER : null,
-  token: initialToken,
-  isAuthenticated: Boolean(initialToken),
+  currentUser: null,
+  token: null,
+  isAuthenticated: false,
+  isInitializing: true,
 
+  initializeAuth: async () => {
+    if (typeof window === 'undefined') {
+      set({ isInitializing: false });
+      return false;
+    }
 
-  loginAsync: async (username: string, password: string, mfaCode?: string) => {
+    const storedToken = localStorage.getItem('rakshasphere_token') || sessionStorage.getItem('rakshasphere_token');
+
+    if (!storedToken) {
+      set({ currentUser: null, token: null, isAuthenticated: false, isInitializing: false });
+      return false;
+    }
+
+    try {
+      const userData = await apiService.getCurrentUser();
+      if (!userData || (!userData.username && !userData.email)) {
+        throw new Error('Invalid user payload');
+      }
+
+      const roleEnum = (userData.role as UserRole) || 'ROLE_ADMIN';
+      set({
+        currentUser: {
+          id: `USR-${userData.userId || '101'}`,
+          username: userData.username,
+          name: userData.name || userData.username.toUpperCase(),
+          email: userData.email || `${userData.username}@rakshasphere.internal`,
+          role: roleEnum,
+          avatar: userData.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
+        },
+        token: storedToken,
+        isAuthenticated: true,
+        isInitializing: false
+      });
+      return true;
+    } catch (err) {
+      localStorage.removeItem('rakshasphere_token');
+      sessionStorage.removeItem('rakshasphere_token');
+      set({ currentUser: null, token: null, isAuthenticated: false, isInitializing: false });
+      return false;
+    }
+  },
+
+  loginAsync: async (username: string, password: string, mfaCode?: string, rememberMe: boolean = true) => {
     try {
       const res = await apiService.login(username, password, mfaCode);
       const token = res.token || res.jwt;
@@ -41,7 +74,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const roleEnum = (res.role as UserRole) || 'ROLE_ADMIN';
 
       if (typeof window !== 'undefined') {
-        localStorage.setItem('rakshasphere_token', token);
+        localStorage.removeItem('rakshasphere_token');
+        sessionStorage.removeItem('rakshasphere_token');
+        if (rememberMe) {
+          localStorage.setItem('rakshasphere_token', token);
+        } else {
+          sessionStorage.setItem('rakshasphere_token', token);
+        }
       }
 
       set({
@@ -54,18 +93,21 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           avatar: res.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
         },
         token,
-        isAuthenticated: true
+        isAuthenticated: true,
+        isInitializing: false
       });
       return true;
     } catch (err: any) {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('rakshasphere_token');
+        sessionStorage.removeItem('rakshasphere_token');
+      }
       set({
         currentUser: null,
         token: null,
-        isAuthenticated: false
+        isAuthenticated: false,
+        isInitializing: false
       });
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('rakshasphere_token');
-      }
       throw new Error(err.message || 'Invalid username or password');
     }
   },
@@ -73,8 +115,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   logout: () => {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('rakshasphere_token');
+      sessionStorage.removeItem('rakshasphere_token');
     }
-    set({ currentUser: null, token: null, isAuthenticated: false });
+    set({ currentUser: null, token: null, isAuthenticated: false, isInitializing: false });
   },
 
   hasRole: (role: UserRole) => {

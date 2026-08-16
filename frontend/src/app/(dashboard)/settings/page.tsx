@@ -6,11 +6,11 @@ import { PermissionGuard } from '@/components/common/PermissionGuard';
 import { apiService } from '@/services/api';
 import { Button } from '@/components/ui/Button';
 import { StatusBadge } from '@/components/ui/StatusBadge';
-import { useAuthStore, DEFAULT_USER } from '@/store/useAuthStore';
+import { useAuthStore } from '@/store/useAuthStore';
 
 export default function SettingsPage() {
   const { currentUser } = useAuthStore();
-  const user = currentUser || DEFAULT_USER;
+  const user = currentUser;
 
   const [activeTab, setActiveTab] = useState<'PROFILE' | 'RULES' | 'USERS' | 'KEYS' | 'AUDIT' | 'SYSINFO'>('PROFILE');
   const [riskThreshold, setRiskThreshold] = useState<number>(75);

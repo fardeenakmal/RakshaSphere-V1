@@ -13,7 +13,9 @@ const getApiBaseUrl = (): string => {
 const BASE_URL = getApiBaseUrl();
 
 export async function fetchApi<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('rakshasphere_token') : null;
+  const token = typeof window !== 'undefined'
+    ? (localStorage.getItem('rakshasphere_token') || sessionStorage.getItem('rakshasphere_token'))
+    : null;
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -24,15 +26,18 @@ export async function fetchApi<T>(endpoint: string, options: RequestInit = {}): 
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  if (typeof window !== 'undefined') {
-    console.log(`[API Request] ${endpoint} | Authorization header present: ${Boolean(token)}`);
-  }
-
   try {
     const res = await fetch(`${BASE_URL}${endpoint}`, {
       ...options,
       headers,
     });
+
+    if (res.status === 401 && endpoint !== '/auth/login') {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('rakshasphere_token');
+        sessionStorage.removeItem('rakshasphere_token');
+      }
+    }
 
     if (!res.ok) {
       const errorText = await res.text().catch(() => 'API Error');
@@ -53,11 +58,15 @@ export const apiService = {
     return fetchApi<any>('/auth/login', {
       method: 'POST',
       body: JSON.stringify({
-        username: username || 'admin',
-        password: password || 'password',
+        username,
+        password,
         mfaCode: mfaCode || undefined,
       }),
     });
+  },
+
+  async getCurrentUser() {
+    return fetchApi<any>('/auth/me');
   },
 
   async register(data: { username: string; name: string; email: string; password: string; confirmPassword: string; requestedRole?: string }) {

@@ -110,25 +110,12 @@ export const Navbar: React.FC = () => {
           <span className="tabular-nums">{currentTime || '16:55:00'} UTC</span>
         </div>
 
-        {/* Priority 4: Role Display & Switcher Pill */}
-        <div className="hidden sm:flex items-center gap-1.5 px-2 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-xs font-mono text-slate-200">
+        {/* Priority 4: Role Display Badge */}
+        <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-xs font-mono text-slate-200">
           <Shield className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-          <select
-            value={currentUser?.username || 'admin'}
-            onChange={async (e) => {
-              const target = e.target.value;
-              const { loginAsync } = useAuthStore.getState();
-              if (target === 'admin') await loginAsync('admin', 'Admin@Raksha2026!');
-              else if (target === 'analyst_mike') await loginAsync('analyst_mike', 'Analyst@Raksha2026!');
-              else if (target === 'user') await loginAsync('user', 'User@Raksha2026!');
-            }}
-            className="bg-transparent text-slate-200 font-bold focus:outline-none cursor-pointer text-xs font-mono"
-            title="Switch RBAC Identity"
-          >
-            <option value="admin" className="bg-slate-900 text-slate-200">admin (ADMIN)</option>
-            <option value="analyst_mike" className="bg-slate-900 text-slate-200">analyst (ANALYST)</option>
-            <option value="user" className="bg-slate-900 text-slate-200">user (OBSERVER)</option>
-          </select>
+          <span className="font-bold text-emerald-400">
+            {currentUser?.username || 'User'} ({currentUser?.role === 'ROLE_ADMIN' ? 'ADMIN' : currentUser?.role === 'ROLE_SOC_ANALYST' ? 'ANALYST' : 'OBSERVER'})
+          </span>
         </div>
 
         {/* Priority 0: User Avatar & Logout */}

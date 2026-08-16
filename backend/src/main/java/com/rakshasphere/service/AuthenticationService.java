@@ -111,6 +111,25 @@ public class AuthenticationService {
                 .build();
     }
 
+    public AuthResponseDTO getCurrentUserProfile(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new BadCredentialsException("User session expired or user not found"));
+
+        if (user.getStatus() == com.rakshasphere.model.entity.UserStatus.DISABLED) {
+            throw new BadCredentialsException("Account has been disabled");
+        }
+
+        return AuthResponseDTO.builder()
+                .token(null)
+                .type("Bearer")
+                .username(user.getUsername())
+                .name(user.getName())
+                .email(user.getEmail())
+                .role(user.getRole().name())
+                .avatar(user.getAvatar())
+                .build();
+    }
+
     public User register(RegisterRequestDTO request) {
         if (!request.getPassword().equals(request.getConfirmPassword())) {
             throw new IllegalArgumentException("Password confirmation does not match");

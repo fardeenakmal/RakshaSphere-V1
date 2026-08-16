@@ -6,6 +6,8 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -14,6 +16,17 @@ public class AuthController {
 
     @Autowired
     private AuthenticationService authenticationService;
+
+    @GetMapping("/me")
+    public ResponseEntity<ApiResponseDTO<AuthResponseDTO>> getCurrentUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponseDTO.error("Unauthorized: Session invalid or missing"));
+        }
+        AuthResponseDTO response = authenticationService.getCurrentUserProfile(auth.getName());
+        return ResponseEntity.ok(ApiResponseDTO.ok("Active session validated", response));
+    }
 
     @PostMapping("/login")
     public ResponseEntity<ApiResponseDTO<AuthResponseDTO>> login(@Valid @RequestBody AuthRequestDTO request) {
