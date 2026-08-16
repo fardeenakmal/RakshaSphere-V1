@@ -31,7 +31,6 @@ spring:
   # Redis Configuration
   data:
     redis:
-      url: ${SPRING_REDIS_URL:${REDIS_URL:}}
       host: ${SPRING_REDIS_HOST:${REDIS_HOST:localhost}}
       port: ${SPRING_REDIS_PORT:${REDIS_PORT:6379}}
       username: ${SPRING_REDIS_USERNAME:${REDIS_USERNAME:}}
@@ -46,7 +45,7 @@ rakshasphere:
     secret: ${JWT_SECRET}
     expiration-ms: ${JWT_EXPIRATION_MS:86400000} # 24 Hours
   ai:
-    url: ${RAKSHASPHERE_AI_URL:${AI_ENGINE_URL:http://localhost:5000}}
+    url: ${RAKSHASPHERE_AI_URL:${AI_ENGINE_URL:https://rakshasphere-v1-1.onrender.com}}
   honeypot:
     manager-url: ${HONEYPOT_MANAGER_URL:http://localhost:6000}
     manager-api-key: ${HONEYPOT_MANAGER_API_KEY:changeme}
