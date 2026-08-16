@@ -75,8 +75,10 @@ export default function DashboardPage() {
             const clean = process.env.NEXT_PUBLIC_API_URL.replace(/\/+$/, '').replace(/\/api\/v1$/, '');
             return `${clean}/ws-soc`;
           }
+          const protocol = typeof window !== 'undefined' && window.location.protocol === 'https:' ? 'https:' : 'http:';
           const host = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
-          return `http://${host}:8080/ws-soc`;
+          const isLocal = host === 'localhost' || host === '127.0.0.1';
+          return `${protocol}//${host}${isLocal ? ':8080' : ''}/ws-soc`;
         };
 
         const sockJsUrl = getSockJsUrl();

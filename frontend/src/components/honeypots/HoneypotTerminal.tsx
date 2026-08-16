@@ -47,8 +47,10 @@ export const HoneypotTerminal: React.FC<HoneypotTerminalProps> = ({ sessions, on
           const clean = process.env.NEXT_PUBLIC_API_URL.replace(/\/+$/, '').replace(/\/api\/v1$/, '').replace(/^http:/, 'ws:').replace(/^https:/, 'wss:');
           return `${clean}/ws-soc/websocket`;
         }
+        const protocol = typeof window !== 'undefined' && window.location.protocol === 'https:' ? 'wss:' : 'ws:';
         const host = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
-        return `ws://${host}:8080/ws-soc/websocket`;
+        const isLocal = host === 'localhost' || host === '127.0.0.1';
+        return `${protocol}//${host}${isLocal ? ':8080' : ''}/ws-soc/websocket`;
       };
 
       const token = typeof window !== 'undefined' ? localStorage.getItem('rakshasphere_token') : null;
