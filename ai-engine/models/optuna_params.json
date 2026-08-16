@@ -1,0 +1,11 @@
+{
+  "bestParams": {
+    "n_estimators": 120,
+    "max_depth": 22,
+    "min_samples_split": 3,
+    "min_samples_leaf": 1,
+    "max_features": "sqrt"
+  },
+  "bestCrossValF1": 98.5,
+  "timestamp": "2026-08-08 18:27:28"
+}

@@ -1,0 +1,22 @@
+{
+  "modelName": "RakshaSphere Ensemble Intrusion Detector",
+  "version": "1.1.0",
+  "featureCount": 84,
+  "classes": [
+    "BENIGN",
+    "SSH_BRUTE_FORCE",
+    "HTTP_SQL_INJECTION",
+    "TELNET_MIRAI",
+    "DDoS_SYN_FLOOD"
+  ],
+  "accuracyPct": 100.0,
+  "f1ScorePct": 100.0,
+  "trainingSamples": 1600,
+  "datasetType": "SYNTHETIC_DATA",
+  "note": "MODEL TRAINED ON SYNTHETIC DATA",
+  "hyperparameters": {
+    "n_estimators": 100,
+    "max_depth": 20,
+    "random_state": 42
+  }
+}
