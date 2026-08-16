@@ -297,9 +297,10 @@ public class HoneypotOrchestratorService {
                     ? "Deception Sandbox Breach (SSH Success)"
                     : "Honeypot Command Execution Probe";
 
-            String mitre = eventType.contains("SSH_LOGIN_SUCCESS")
-                    ? "T1078 (Valid Accounts)"
-                    : "T1059 (Command-Line Interface)";
+            boolean isLogin = eventType.contains("SSH_LOGIN_SUCCESS");
+            String mitreTactic = isLogin ? "Initial Access" : "Execution";
+            String mitreTechnique = isLogin ? "Valid Accounts" : "Command and Scripting Interpreter";
+            String mitreId = isLogin ? "T1078" : "T1059";
 
             SecurityAlert alert = SecurityAlert.builder()
                     .id("ALT-HP-" + UUID.randomUUID().toString().substring(0, 8))
@@ -310,14 +311,15 @@ public class HoneypotOrchestratorService {
                     .destinationPort(2222)
                     .attackType(attackType)
                     .severity(severity)
-                    .riskScore(eventType.contains("SSH_LOGIN_SUCCESS") ? 90 : 70)
+                    .riskScore(isLogin ? 90 : 70)
                     .confidence(0.95)
-                    .mitreTactic("Initial Access / Deception Probe")
-                    .mitreTechnique(mitre)
-                    .mitreId(eventType.contains("SSH_LOGIN_SUCCESS") ? "T1078" : "T1059")
+                    .mitreTactic(mitreTactic)
+                    .mitreTechnique(mitreTechnique)
+                    .mitreId(mitreId)
                     .status(AlertStatus.ACTIVE)
                     .remediationAction("Captured in Deception Sandbox")
                     .build();
+
 
 
             try {

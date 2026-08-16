@@ -11,6 +11,8 @@ RUN apt-get update && apt-get install -y gcc libc6-dev
 COPY src ./src
 RUN mvn clean package -DskipTests
 
+
+
 # Compile the JNI C file after maven clean!
 RUN mkdir -p /app/target/native && \
     gcc -shared -fpic -I"$JAVA_HOME/include" -I"$JAVA_HOME/include/linux" \

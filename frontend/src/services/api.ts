@@ -210,4 +210,14 @@ export const apiService = {
   async getSystemInfo() {
     return fetchApi<any>('/system/info');
   },
+
+  // MITRE ATT&CK Telemetry Endpoints
+  async getMitreMatrix() {
+    return fetchApi<any[]>('/mitre/matrix');
+  },
+
+  async getMitreTechniqueDetail(id: string) {
+    return fetchApi<any>(`/mitre/techniques/${id}`);
+  },
 };
+

@@ -16,7 +16,7 @@ export const MITRE_TACTICS: MitreTacticGroup[] = [
         name: 'Brute Force',
         tactic: 'Initial Access',
         count: 0,
-        severity: 'CRITICAL',
+        severity: 'NOMINAL',
         description: 'Adversaries attempt credential guessing against SSH, RDP, or FTP.',
         mitigation: 'Enforce strong password policy, rate-limiting & automated eBPF IP block.'
       },
@@ -25,7 +25,7 @@ export const MITRE_TACTICS: MitreTacticGroup[] = [
         name: 'Exploit Public-Facing App',
         tactic: 'Initial Access',
         count: 0,
-        severity: 'HIGH',
+        severity: 'NOMINAL',
         description: 'Targeting known HTTP vulnerabilities or web app flaws to gain entrance.',
         mitigation: 'Divert flow to Web Honeypot Deception trap and apply WAF rules.'
       },
@@ -34,7 +34,7 @@ export const MITRE_TACTICS: MitreTacticGroup[] = [
         name: 'Phishing Vectors',
         tactic: 'Initial Access',
         count: 0,
-        severity: 'LOW',
+        severity: 'NOMINAL',
         description: 'Spearphishing links or malicious attachments targeting domain users.',
         mitigation: 'Email filtering & user security awareness training.'
       }
@@ -49,7 +49,7 @@ export const MITRE_TACTICS: MitreTacticGroup[] = [
         name: 'Command & Scripting Interpreter',
         tactic: 'Execution',
         count: 0,
-        severity: 'CRITICAL',
+        severity: 'NOMINAL',
         description: 'Executing sh, bash, PowerShell or Python scripts to run arbitrary code.',
         mitigation: 'Restrict interpreter permissions and kill suspicious child processes.'
       },
@@ -58,7 +58,7 @@ export const MITRE_TACTICS: MitreTacticGroup[] = [
         name: 'Exploitation for Client Execution',
         tactic: 'Execution',
         count: 0,
-        severity: 'MEDIUM',
+        severity: 'NOMINAL',
         description: 'Exploiting client software vulnerabilities to trigger payload.',
         mitigation: 'Automatic patching & micro-segmentation.'
       }
@@ -73,7 +73,7 @@ export const MITRE_TACTICS: MitreTacticGroup[] = [
         name: 'Scheduled Task / Cron Job',
         tactic: 'Persistence',
         count: 0,
-        severity: 'HIGH',
+        severity: 'NOMINAL',
         description: 'Adversaries configure cron jobs or systemd units to maintain access.',
         mitigation: 'Monitor /etc/cron* and systemd timer creation.'
       },
@@ -82,7 +82,7 @@ export const MITRE_TACTICS: MitreTacticGroup[] = [
         name: 'Account Manipulation',
         tactic: 'Persistence',
         count: 0,
-        severity: 'MEDIUM',
+        severity: 'NOMINAL',
         description: 'Adding unauthorized SSH keys or editing account credentials.',
         mitigation: 'Cryptographic identity auditing and SSH key pinning.'
       }
@@ -97,7 +97,7 @@ export const MITRE_TACTICS: MitreTacticGroup[] = [
         name: 'Exploitation for Privilege Escalation',
         tactic: 'Privilege Escalation',
         count: 0,
-        severity: 'CRITICAL',
+        severity: 'NOMINAL',
         description: 'Kernel exploits or SUID binary abuse to achieve root/SYSTEM.',
         mitigation: 'Kernel security hardening and eBPF syscall audit.'
       }
@@ -112,7 +112,7 @@ export const MITRE_TACTICS: MitreTacticGroup[] = [
         name: 'Network Service Discovery',
         tactic: 'Discovery',
         count: 0,
-        severity: 'MEDIUM',
+        severity: 'NOMINAL',
         description: 'Port scanning (Nmap, Masscan) to enumerate active services.',
         mitigation: 'Auto-divert scanning IPs into low-interaction Telnet/HTTP honeypots.'
       },
@@ -121,7 +121,7 @@ export const MITRE_TACTICS: MitreTacticGroup[] = [
         name: 'System Information Discovery',
         tactic: 'Discovery',
         count: 0,
-        severity: 'LOW',
+        severity: 'NOMINAL',
         description: 'Querying OS version, kernel release, and environment parameters.',
         mitigation: 'Obfuscate server banners and system tokens.'
       }
@@ -136,7 +136,7 @@ export const MITRE_TACTICS: MitreTacticGroup[] = [
         name: 'Remote Services (SMB/SSH)',
         tactic: 'Lateral Movement',
         count: 0,
-        severity: 'CRITICAL',
+        severity: 'NOMINAL',
         description: 'Moving across internal subnets using compromised credentials.',
         mitigation: 'Self-healing zero-trust network quarantine & dynamic VLAN isolation.'
       }
@@ -151,7 +151,7 @@ export const MITRE_TACTICS: MitreTacticGroup[] = [
         name: 'Network Denial of Service (DDoS)',
         tactic: 'Impact',
         count: 0,
-        severity: 'CRITICAL',
+        severity: 'NOMINAL',
         description: 'Volumetric ICMP/UDP/SYN floods targeting core gateway.',
         mitigation: 'Instant NIC driver eBPF/XDP drop rules.'
       }

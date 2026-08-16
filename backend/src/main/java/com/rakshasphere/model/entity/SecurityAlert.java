@@ -46,14 +46,15 @@ public class SecurityAlert {
     @com.fasterxml.jackson.annotation.JsonProperty("confidenceScore")
     private Double confidence;
 
-    @Column(name = "mitre_tactic", nullable = false, length = 100)
+    @Column(name = "mitre_tactic", nullable = true, length = 100)
     private String mitreTactic;
 
-    @Column(name = "mitre_technique", nullable = false, length = 100)
+    @Column(name = "mitre_technique", nullable = true, length = 100)
     private String mitreTechnique;
 
-    @Column(name = "mitre_id", nullable = false, length = 30)
+    @Column(name = "mitre_id", nullable = true, length = 30)
     private String mitreId;
+
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)

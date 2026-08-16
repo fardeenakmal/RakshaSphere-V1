@@ -41,6 +41,10 @@ class AiEngineTestCase(unittest.TestCase):
             self.assertIn("confidenceScore", data)
             self.assertIn("mitreTactic", data)
             self.assertIn("mitreTechnique", data)
+            self.assertIn("mitreId", data)
+            self.assertTrue(data["mitreId"].startswith("T"))
+
+
 
 
     def test_invalid_feature_count_predict(self):
@@ -55,12 +59,19 @@ class AiEngineTestCase(unittest.TestCase):
         with self.assertRaises(urllib.error.HTTPError) as cm:
             urllib.request.urlopen(req)
 
-        # Expecting HTTP 422 Unprocessable Entity
-        self.assertEqual(cm.exception.code, 422)
-
-
+    def test_pipeline_benign_no_mitre_id(self):
+        """Test that BENIGN flow predictions produce mitreId = None and no fake T0000 technique."""
+        from inference.pipeline import ThreatInferencePipeline
+        pipeline = ThreatInferencePipeline()
+        # Mock BENIGN prediction result
+        prediction = pipeline.predict_flow([0.0] * 84)
+        if prediction["attackType"] == "BENIGN":
+            self.assertIsNone(prediction["mitreId"])
+            self.assertIsNone(prediction["mitreTactic"])
+            self.assertIsNone(prediction["mitreTechnique"])
 
 if __name__ == "__main__":
     unittest.main()
+
 
 

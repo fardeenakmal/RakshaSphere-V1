@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface SecurityAlertRepository extends JpaRepository<SecurityAlert, String> {
@@ -16,4 +17,10 @@ public interface SecurityAlertRepository extends JpaRepository<SecurityAlert, St
     Page<SecurityAlert> findBySeverity(AlertSeverity severity, Pageable pageable);
     Page<SecurityAlert> findByStatus(AlertStatus status, Pageable pageable);
     long countByStatus(AlertStatus status);
+
+    long countByMitreId(String mitreId);
+    List<SecurityAlert> findByMitreIdOrderByTimestampDesc(String mitreId);
+    Optional<SecurityAlert> findFirstByMitreIdOrderByTimestampDesc(String mitreId);
+    Optional<SecurityAlert> findFirstByMitreIdOrderByTimestampAsc(String mitreId);
 }
+

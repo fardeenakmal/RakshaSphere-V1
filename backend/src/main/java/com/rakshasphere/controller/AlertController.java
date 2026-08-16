@@ -89,6 +89,36 @@ public class AlertController {
         String mitreId = (String) aiData.get("mitreId");
         Double mseLoss = aiData.get("reconstructionMse") != null ? ((Number) aiData.get("reconstructionMse")).doubleValue() : 0.0;
 
+        if (mitreId == null || mitreId.isBlank()) {
+            String resolvedAttack = attackType != null ? attackType.toUpperCase() : "";
+            if (resolvedAttack.contains("BENIGN")) {
+                mitreId = null;
+                mitreTactic = null;
+                mitreTechnique = null;
+            } else if (resolvedAttack.contains("BRUTE") || resolvedAttack.contains("SSH")) {
+                mitreId = "T1110";
+                mitreTactic = "Initial Access";
+                mitreTechnique = "Brute Force";
+            } else if (resolvedAttack.contains("SQL") || resolvedAttack.contains("HTTP") || resolvedAttack.contains("WEB")) {
+                mitreId = "T1190";
+                mitreTactic = "Execution";
+                mitreTechnique = "Exploit Public-Facing Application";
+            } else if (resolvedAttack.contains("TELNET") || resolvedAttack.contains("MIRAI") || resolvedAttack.contains("SCAN")) {
+                mitreId = "T1046";
+                mitreTactic = "Discovery";
+                mitreTechnique = "Network Service Discovery";
+            } else if (resolvedAttack.contains("DDOS") || resolvedAttack.contains("FLOOD")) {
+                mitreId = "T1498";
+                mitreTactic = "Impact";
+                mitreTechnique = "Network Denial of Service";
+            } else {
+                mitreId = "T1059";
+                mitreTactic = "Execution";
+                mitreTechnique = "Command and Scripting Interpreter";
+            }
+        }
+
+
         SecurityAlert alert = SecurityAlert.builder()
                 .id("ALT-" + System.currentTimeMillis())
                 .timestamp(LocalDateTime.now())
@@ -100,10 +130,11 @@ public class AlertController {
                 .severity(severity)
                 .riskScore(riskScore)
                 .confidence(confidence)
-                .mitreTactic(mitreTactic != null ? mitreTactic : "Initial Access")
-                .mitreTechnique(mitreTechnique != null ? mitreTechnique : "Exploit")
-                .mitreId(mitreId != null ? mitreId : "T1110")
+                .mitreTactic(mitreTactic)
+                .mitreTechnique(mitreTechnique)
+                .mitreId(mitreId)
                 .status(AlertStatus.ACTIVE)
+
                 .remediationAction(riskScore >= 70 ? "Auto-remediation queued via eBPF XDP filter" : "Monitored")
                 .flowDurationMs(flowDto.getFlowFeatures().get(0).longValue())
                 .totalFwdPackets(flowDto.getFlowFeatures().get(1).intValue())

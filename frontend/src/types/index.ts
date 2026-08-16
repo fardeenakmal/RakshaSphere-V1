@@ -51,10 +51,25 @@ export interface MitreTechnique {
   name: string;
   tactic: string;
   count: number;
-  severity: Severity;
+  severity?: Severity | 'NOMINAL';
   description: string;
   mitigation: string;
+  lastSeen?: string;
+  firstSeen?: string;
 }
+
+export interface MitreStats {
+  techniqueId: string;
+  eventCount: number;
+  firstSeen?: string;
+  lastSeen?: string;
+  highestSeverity: string;
+  criticalCount: number;
+  highCount: number;
+  mediumCount: number;
+  lowCount: number;
+}
+
 
 export interface SystemMetrics {
   activeThreats: number;

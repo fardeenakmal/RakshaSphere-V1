@@ -74,18 +74,18 @@ class ThreatInferencePipeline:
         mse_loss = round(float(np.mean(np.square(X_scaled - 0.1)) * 0.1), 4)
         is_anomaly = bool(mse_loss > 0.0450)
 
-        # Map Severity & MITRE ATT&CK Taxonomy
         severity_map = {
             "SSH_BRUTE_FORCE": ("CRITICAL", 9, "Initial Access", "Brute Force", "T1110"),
             "HTTP_SQL_INJECTION": ("HIGH", 7, "Execution", "Exploit Public-Facing Application", "T1190"),
             "TELNET_MIRAI": ("MEDIUM", 5, "Discovery", "Network Service Discovery", "T1046"),
             "DDoS_SYN_FLOOD": ("CRITICAL", 9, "Impact", "Network Denial of Service", "T1498"),
-            "BENIGN": ("INFO", 1, "None", "Normal Operation", "T0000")
+            "BENIGN": ("INFO", 1, None, None, None)
         }
 
         severity, weight, tactic, technique, mitre_id = severity_map.get(
             predicted_class, ("HIGH", 7, "Execution", "Automated Exploitation", "T1059")
         )
+
 
         # Quantitative Risk Score Formula
         raw_risk = ((weight * confidence * 5) / 1.0) * 10.0
