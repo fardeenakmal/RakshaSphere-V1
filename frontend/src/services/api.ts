@@ -50,7 +50,7 @@ export async function fetchApi<T>(endpoint: string, options: RequestInit = {}): 
           const rawText = await res.text();
           if (rawText.startsWith('<') || rawText.includes('<!DOCTYPE')) {
             errorMsg = res.status === 404
-              ? 'Backend API endpoint not found or service unavailable (HTTP 404)'
+              ? 'Backend API unavailable (HTTP 404). Please set NEXT_PUBLIC_API_URL in Vercel to your live Render backend URL (e.g. https://your-backend.onrender.com).'
               : `Backend service error (HTTP ${res.status})`;
           } else {
             errorMsg = rawText.slice(0, 150) || errorMsg;
