@@ -16,7 +16,7 @@ public class AiEngineHealthIndicator implements HealthIndicator {
 
     private static final Logger log = LoggerFactory.getLogger(AiEngineHealthIndicator.class);
 
-    @Value("${rakshasphere.ai.url:${RAKSHASPHERE_AI_URL:${AI_ENGINE_URL:http://localhost:5000}}}")
+    @Value("${rakshasphere.ai.url:http://localhost:5000}")
     private String aiEngineUrl;
 
     private final RestTemplate restTemplate;

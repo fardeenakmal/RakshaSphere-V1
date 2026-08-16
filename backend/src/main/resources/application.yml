@@ -46,7 +46,7 @@ rakshasphere:
     secret: ${JWT_SECRET}
     expiration-ms: ${JWT_EXPIRATION_MS:86400000} # 24 Hours
   ai:
-    url: ${RAKSHASPHERE_AI_URL:${AI_ENGINE_URL:${rakshasphere.ai.url:http://localhost:5000}}}
+    url: ${RAKSHASPHERE_AI_URL:${AI_ENGINE_URL:http://localhost:5000}}
   honeypot:
     manager-url: ${HONEYPOT_MANAGER_URL:http://localhost:6000}
     manager-api-key: ${HONEYPOT_MANAGER_API_KEY:changeme}

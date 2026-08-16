@@ -19,7 +19,7 @@ public class AiEngineService {
     private final WebClient webClient;
 
     public AiEngineService(WebClient.Builder webClientBuilder,
-                           @Value("${rakshasphere.ai.url:${RAKSHASPHERE_AI_URL:${AI_ENGINE_URL:http://localhost:5000}}}") String aiEngineUrl) {
+                           @Value("${rakshasphere.ai.url:http://localhost:5000}") String aiEngineUrl) {
         this.webClient = webClientBuilder.baseUrl(aiEngineUrl).build();
         log.info("Initialized AiEngineService target URL: {}", aiEngineUrl);
     }
