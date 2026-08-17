@@ -107,12 +107,8 @@ export const Sidebar: React.FC = () => {
         }`}
       >
         {/* Brand Header */}
-      
         <div>
-          
           <div className={`flex items-center h-16 border-b border-slate-800/80 ${sidebarOpen ? 'px-4 justify-between' : 'justify-center'}`}>
-            
-          
             <Link href="/dashboard" className={`flex items-center shrink-0 overflow-hidden ${sidebarOpen ? 'gap-3' : ''}`} title="RakshaSphere SOC Console">
               <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 shrink-0 shadow-lg shadow-emerald-500/10">
                 <ShieldCheck className="w-6 h-6 animate-pulse" />
@@ -129,21 +125,9 @@ export const Sidebar: React.FC = () => {
               )}
             </Link>
 
-        
             <button
               onClick={toggleSidebar}
               className={`rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/80 transition cursor-pointer shrink-0 hidden md:block ${sidebarOpen ? 'p-1.5' : 'p-1 ml-1'}`}
-              title={sidebarOpen ? 'Collapse Sidebar' : 'Expand Sidebar'}
-            >
-              {sidebarOpen ? <ChevronLeft className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
-            </button>
-          </div>
-              )}
-            </Link>
-
-            <button
-              onClick={toggleSidebar}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/80 transition cursor-pointer shrink-0 hidden md:block"
               title={sidebarOpen ? 'Collapse Sidebar' : 'Expand Sidebar'}
             >
               {sidebarOpen ? <ChevronLeft className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
@@ -230,5 +214,3 @@ export const Sidebar: React.FC = () => {
     </>
   );
 };
-
-
