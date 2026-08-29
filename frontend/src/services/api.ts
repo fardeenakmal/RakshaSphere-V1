@@ -5,7 +5,15 @@
 
 const getApiBaseUrl = (): string => {
   const envUrl = process.env.NEXT_PUBLIC_API_URL;
-  if (!envUrl) return '/api/v1';
+  if (!envUrl) {
+    if (typeof window !== 'undefined') {
+      const host = window.location.hostname;
+      if (host === 'localhost' || host === '127.0.0.1') {
+        return 'http://localhost:8080/api/v1';
+      }
+    }
+    return 'http://localhost:8080/api/v1';
+  }
   const cleanUrl = envUrl.replace(/\/+$/, '');
   return cleanUrl.endsWith('/api/v1') ? cleanUrl : `${cleanUrl}/api/v1`;
 };
@@ -32,8 +40,8 @@ export async function fetchApi<T>(endpoint: string, options: RequestInit = {}): 
       headers,
     });
 
-    if (res.status === 401 && endpoint !== '/auth/login') {
-      if (typeof window !== 'undefined') {
+    if ((res.status === 401 || res.status === 403) && endpoint !== '/auth/login') {
+      if (typeof window !== 'undefined' && !token?.startsWith('guest_')) {
         localStorage.removeItem('rakshasphere_token');
         sessionStorage.removeItem('rakshasphere_token');
       }
@@ -50,7 +58,7 @@ export async function fetchApi<T>(endpoint: string, options: RequestInit = {}): 
           const rawText = await res.text();
           if (rawText.startsWith('<') || rawText.includes('<!DOCTYPE')) {
             errorMsg = res.status === 404
-              ? 'Backend API unavailable (HTTP 404). Please set NEXT_PUBLIC_API_URL in Vercel to your live Render backend URL (e.g. https://your-backend.onrender.com).'
+              ? 'Backend API unavailable (HTTP 404). Please ensure Spring Boot backend is running on http://localhost:8080.'
               : `Backend service error (HTTP ${res.status})`;
           } else {
             errorMsg = rawText.slice(0, 150) || errorMsg;

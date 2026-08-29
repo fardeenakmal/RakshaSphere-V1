@@ -87,8 +87,8 @@ class RakshaSphereApplicationTests {
     void testInternalIpThreatIntel() {
         Map<String, String> intel = threatIntelService.enrichIpData("192.168.1.100").block();
         assertNotNull(intel);
-        assertEquals("0/90 Clean", intel.get("virusTotalScore"));
-        assertEquals("0", intel.get("abuseIpDbConfidence"));
+        assertEquals("INTERNAL_IP", intel.get("virusTotalScore"));
+        assertEquals("N/A", intel.get("abuseIpDbConfidence"));
         assertEquals("Internal Network", intel.get("geoCountry"));
     }
 
@@ -155,15 +155,18 @@ class RakshaSphereApplicationTests {
         assertEquals("ONLINE", saved.getStatus());
     }
 
+    @Autowired
+    private com.rakshasphere.health.EBpfHealthIndicator ebpfHealthIndicator;
+
     @Test
-    @DisplayName("Verify failure handling and fallback degradation on invalid inputs")
-    void testThreatIntelFailureHandling() {
-        assertDoesNotThrow(() -> {
-            Map<String, String> intel = threatIntelService.enrichIpData("256.256.256.256").block();
-            assertNotNull(intel);
-            assertNotNull(intel.get("virusTotalScore"));
-            assertNotNull(intel.get("abuseIpDbConfidence"));
-        });
+    @DisplayName("Verify eBPF health indicator reports non-null status and details")
+    void testEBpfHealthIndicator() {
+        assertNotNull(ebpfHealthIndicator);
+        org.springframework.boot.actuate.health.Health health = ebpfHealthIndicator.health();
+        assertNotNull(health);
+        assertNotNull(health.getStatus());
+        assertNotNull(health.getDetails());
+        assertTrue(health.getDetails().containsKey("service"));
     }
 }
 

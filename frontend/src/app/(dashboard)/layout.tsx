@@ -11,21 +11,21 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <AuthGuard>
-      <div className="min-h-screen text-slate-100 flex relative">
+      <div className="min-h-screen bg-[#030712] text-slate-100 flex relative">
         {/* Sidebar Navigation */}
         <Sidebar />
 
         {/* Main Content Shell */}
         <div
-          className={`flex-1 flex flex-col transition-all duration-300 min-w-0 ${
+          className={`flex-1 flex flex-col transition-all duration-200 min-w-0 ${
             sidebarOpen ? 'md:ml-64' : 'md:ml-20'
           }`}
         >
-          {/* Top Header Bar */}
+          {/* Top Security Command Bar */}
           <Navbar />
 
-          {/* Dynamic Route Page Container */}
-          <main className="flex-1 p-4 md:p-6 lg:p-8 max-w-7xl w-full mx-auto space-y-6 overflow-x-hidden">
+          {/* Dynamic Route Page Container with fluid width */}
+          <main className="flex-1 p-4 md:p-6 lg:p-7 max-w-[1600px] w-full mx-auto space-y-6 overflow-x-hidden">
             {children}
           </main>
         </div>

@@ -42,12 +42,17 @@ public class SocDashboardController {
         org.springframework.data.domain.Page<SecurityAlert> activeAlertsPage = alertRepository.findByStatus(AlertStatus.ACTIVE, org.springframework.data.domain.PageRequest.of(0, 100));
         List<SecurityAlert> activeAlerts = activeAlertsPage.getContent();
 
-        int systemRiskScore = activeAlerts.isEmpty() ? 12 : (int) Math.min(99, activeAlerts.stream().mapToInt(SecurityAlert::getRiskScore).average().orElse(12.0) + (activeThreats * 5));
+        int systemRiskScore = activeAlerts.isEmpty() 
+                ? 0 
+                : (int) Math.min(100, Math.round(activeAlerts.stream().mapToInt(SecurityAlert::getRiskScore).average().orElse(0.0)));
 
-        double networkHealthPct = Math.max(60.0, 100.0 - (activeThreats * 4.5));
+        double networkHealthPct = activeThreats == 0 
+                ? 100.0 
+                : Math.max(0.0, Math.round((100.0 - (activeThreats * 4.5)) * 10.0) / 10.0);
+        
         long totalAlerts = alertRepository.count();
-        long ingestedFlowsPerSec = totalAlerts > 0 ? totalAlerts * 150 : 0;
-        int selfHealingLatencyMs = 8; // Native eBPF JNI execution latency
+        long ingestedFlowsPerSec = totalAlerts > 0 ? totalAlerts : 0;
+        int selfHealingLatencyMs = ebpfDropsCount > 0 ? 8 : 0;
 
         SystemMetricsDTO metrics = SystemMetricsDTO.builder()
                 .activeThreats(activeThreats)
@@ -55,7 +60,7 @@ public class SocDashboardController {
                 .ebpfDropsCount(ebpfDropsCount)
                 .activeHoneypots(activeHoneypots)
                 .systemRiskScore(systemRiskScore)
-                .networkHealthPct(Math.round(networkHealthPct * 10.0) / 10.0)
+                .networkHealthPct(networkHealthPct)
                 .ingestedFlowsPerSec(ingestedFlowsPerSec)
                 .selfHealingLatencyMs(selfHealingLatencyMs)
                 .build();

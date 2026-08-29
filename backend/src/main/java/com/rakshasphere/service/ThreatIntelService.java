@@ -85,16 +85,16 @@ public class ThreatIntelService {
                 .timeout(Duration.ofSeconds(4))
                 .retryWhen(Retry.backoff(2, Duration.ofMillis(500)).filter(t -> !(t instanceof WebClientResponseException.Unauthorized)))
                 .map(this::parseVirusTotalResponse)
-                .onErrorResume(WebClientResponseException.Unauthorized.class, e -> Mono.just(createVtErrorMap("UNAUTHORIZED_401")))
-                .onErrorResume(WebClientResponseException.Forbidden.class, e -> Mono.just(createVtErrorMap("FORBIDDEN_403")))
-                .onErrorResume(WebClientResponseException.TooManyRequests.class, e -> Mono.just(createVtErrorMap("RATE_LIMITED_429")))
-                .onErrorResume(e -> Mono.just(createVtErrorMap("UNREACHABLE")));
+                .onErrorResume(WebClientResponseException.Unauthorized.class, e -> Mono.just(createVtErrorMap("UNAUTHORIZED")))
+                .onErrorResume(WebClientResponseException.Forbidden.class, e -> Mono.just(createVtErrorMap("FORBIDDEN")))
+                .onErrorResume(WebClientResponseException.TooManyRequests.class, e -> Mono.just(createVtErrorMap("RATE_LIMITED")))
+                .onErrorResume(e -> Mono.just(createVtErrorMap("UNAVAILABLE")));
     }
 
     public Mono<Map<String, String>> fetchAbuseIpDbData(String ipAddress) {
         if (abuseIpDbApiKey == null || abuseIpDbApiKey.isBlank()) {
             Map<String, String> res = new HashMap<>();
-            res.put("abuseIpDbConfidence", "0");
+            res.put("abuseIpDbConfidence", "NOT_CONFIGURED");
             return Mono.just(res);
         }
 
@@ -107,10 +107,10 @@ public class ThreatIntelService {
                 .timeout(Duration.ofSeconds(4))
                 .retryWhen(Retry.backoff(2, Duration.ofMillis(500)).filter(t -> !(t instanceof WebClientResponseException.Unauthorized)))
                 .map(this::parseAbuseIpDbResponse)
-                .onErrorResume(WebClientResponseException.Unauthorized.class, e -> Mono.just(createAbuseErrorMap("0")))
-                .onErrorResume(WebClientResponseException.Forbidden.class, e -> Mono.just(createAbuseErrorMap("0")))
-                .onErrorResume(WebClientResponseException.TooManyRequests.class, e -> Mono.just(createAbuseErrorMap("0")))
-                .onErrorResume(e -> Mono.just(createAbuseErrorMap("0")));
+                .onErrorResume(WebClientResponseException.Unauthorized.class, e -> Mono.just(createAbuseErrorMap("UNAUTHORIZED")))
+                .onErrorResume(WebClientResponseException.Forbidden.class, e -> Mono.just(createAbuseErrorMap("FORBIDDEN")))
+                .onErrorResume(WebClientResponseException.TooManyRequests.class, e -> Mono.just(createAbuseErrorMap("RATE_LIMITED")))
+                .onErrorResume(e -> Mono.just(createAbuseErrorMap("UNAVAILABLE")));
     }
 
     private Map<String, String> parseVirusTotalResponse(String jsonResponse) {
@@ -137,7 +137,7 @@ public class ThreatIntelService {
             }
         } catch (Exception e) {
             log.error("Failed to parse VirusTotal JSON response", e);
-            vtData.put("virusTotalScore", "PARSE_ERROR");
+            vtData.put("virusTotalScore", "UNAVAILABLE");
         }
         return vtData;
     }
@@ -159,7 +159,7 @@ public class ThreatIntelService {
             }
         } catch (Exception e) {
             log.error("Failed to parse AbuseIPDB JSON response", e);
-            abuseData.put("abuseIpDbConfidence", "0");
+            abuseData.put("abuseIpDbConfidence", "UNAVAILABLE");
         }
         return abuseData;
     }
@@ -182,17 +182,17 @@ public class ThreatIntelService {
 
     private Map<String, String> getInternalIpData(String ip) {
         Map<String, String> intel = new HashMap<>();
-        intel.put("virusTotalScore", "0/90 Clean");
-        intel.put("abuseIpDbConfidence", "0");
+        intel.put("virusTotalScore", "INTERNAL_IP");
+        intel.put("abuseIpDbConfidence", "N/A");
         intel.put("geoCountry", "Internal Network");
-        intel.put("ispName", "Local Infrastructure");
+        intel.put("ispName", "Local Infrastructure (RFC 1918)");
         return intel;
     }
 
     private Map<String, String> getFallbackData(String ip) {
         Map<String, String> intel = new HashMap<>();
         intel.put("virusTotalScore", "UNAVAILABLE");
-        intel.put("abuseIpDbConfidence", "0");
+        intel.put("abuseIpDbConfidence", "UNAVAILABLE");
         intel.put("geoCountry", "Unknown");
         intel.put("ispName", "Unknown ISP");
         return intel;

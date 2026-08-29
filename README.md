@@ -1,186 +1,274 @@
-# RakshaSphere
+# RakshaSphere (रक्षाSphere) — Autonomous Cyber Defense Platform
 
-> **AI-Powered Autonomous Cyber Defense & Self-Healing Network Platform**
+[![Next.js 15](https://img.shields.io/badge/Frontend-Next.js%2015%20(App%20Router)-black?style=flat-square&logo=next.js)](https://nextjs.org/)
+[![Spring Boot 3.2](https://img.shields.io/badge/Backend-Spring%20Boot%203.2%20(Java%2021)-green?style=flat-square&logo=springboot)](https://spring.io/projects/spring-boot)
+[![FastAPI](https://img.shields.io/badge/AI%20Engine-FastAPI%20(Python%203.11)-teal?style=flat-square&logo=fastapi)](https://fastapi.tiangolo.com/)
+[![Docker Compose](https://img.shields.io/badge/Deployment-Docker%20Compose-blue?style=flat-square&logo=docker)](https://www.docker.com/)
+[![eBPF / XDP](https://img.shields.io/badge/Kernel-eBPF%20%2F%20XDP-red?style=flat-square&logo=linux)](https://ebpf.io/)
+[![MySQL 8.0](https://img.shields.io/badge/Database-MySQL%208.0-orange?style=flat-square&logo=mysql)](https://www.mysql.com/)
+[![Redis 7](https://img.shields.io/badge/Cache-Redis%207-critical?style=flat-square&logo=redis)](https://redis.io/)
+[![Mosquitto MQTT](https://img.shields.io/badge/IoT-Eclipse%20Mosquitto-purple?style=flat-square&logo=eclipse)](https://mosquitto.org/)
 
-[![Version](https://img.shields.io/badge/version-1.0.0--production-007ACC?style=for-the-badge&logo=git&logoColor=white)](https://github.com/fardeenakmal/RakshaSphere-V1)
-[![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge&logo=open-source-initiative&logoColor=white)](LICENSE)
-[![Java 21](https://img.shields.io/badge/Java-21_LTS-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)](https://www.oracle.com/java/)
-[![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.2.x-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
-[![Next.js](https://img.shields.io/badge/Next.js-14.x-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
-[![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
-[![Docker](https://img.shields.io/badge/Docker-Containerized-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
-
----
-
-## 📑 Table of Contents
-
-- [Overview](#-overview)
-- [System Architecture](#-system-architecture)
-- [Core Features & Modules](#-core-features--modules)
-- [Technology Stack](#-technology-stack)
-- [Repository Structure](#-repository-structure)
-- [End-to-End System Workflow](#-end-to-end-system-workflow)
-- [Installation & Setup Guide](#-installation--setup-guide)
-- [Project Status & Roadmap](#-project-status--roadmap)
-- [License](#-license)
+> **An integrated, multi-tier autonomous cyber defense and security operations center (SOC) platform. RakshaSphere integrates real-time machine learning threat inference, kernel-level eBPF/XDP telemetry, containerized Cowrie honeypot deception sandboxing, IoT edge monitoring over MQTT, and a reactive analyst triage console.**
 
 ---
 
-## 🛡️ Overview
+## Table of Contents
 
-**RakshaSphere** is an enterprise-ready, AI-driven autonomous cyber defense platform engineered by a solo developer. It unifies real-time threat detection, dynamic adversary deception, automated risk quantification, and self-healing network orchestration into a single resilient security ecosystem.
-
-Traditional Security Operations Center (SOC) infrastructure suffers from high false positive rates, delayed manual remediation, and static rules that fail against zero-day exploits. RakshaSphere addresses this through a **Closed-Loop Cyber Defense Architecture**. When a malicious payload or reconnaissance pattern is classified, the platform automatically triggers network containment via eBPF/iptables, diverts attackers into isolated deception honeypots, and presents actionable telemetry on a unified Next.js SOC dashboard.
-
-### Key Value Proposition
-- **Zero-Day Anomaly Detection**: Deep Autoencoders flag uncatalogued exploits in sub-10ms.
-- **Attacker Redirection**: Dynamically routes attacker traffic into ephemeral Docker deception containers.
-- **Automated Network Self-Healing**: Enforces network containment within milliseconds of threat validation, eliminating the MTTR (Mean Time to Respond) human bottleneck.
+- [System Architecture](#system-architecture)
+- [Key Features](#key-features)
+- [Technology Stack](#technology-stack)
+- [Repository Structure](#repository-structure)
+- [Service Topology & Port Allocations](#service-topology--port-allocations)
+- [Quick Start Guide](#quick-start-guide)
+  - [Prerequisites](#prerequisites)
+  - [Step-by-Step Launch](#step-by-step-launch)
+  - [Default Credentials](#default-credentials)
+- [Service Verification & Health Checks](#service-verification--health-checks)
+- [Documentation Index](#documentation-index)
+- [Engineering Disclaimers & Scope](#engineering-disclaimers--scope)
 
 ---
 
-## 🏗️ System Architecture
+## System Architecture
 
-RakshaSphere follows a decoupled microservices pattern comprising five core subsystems: Network Ingestion Layer, AI Classification Core, Threat Intelligence Engine, Self-Healing Orchestrator, and the Next.js SOC Dashboard.
-
-### Enterprise Data Flow & Architecture
-
-```mermaid
-flowchart TB
-    subgraph Client_Edge ["Network Edge & Ingestion Layer"]
-        NET_TAP["Raw Traffic / PCAP Tap"]
-        IOT_DAEMON["IoT Edge Security Daemon"]
-        FLOW_EXTRACT["CICFlowMeter / Scapy Analyzer"]
-    end
-
-    subgraph AI_Inference ["AI & Machine Learning Core"]
-        MODEL_RF["Random Forest Classifier"]
-        MODEL_XGB["XGBoost Flow Engine"]
-        MODEL_AE["Autoencoder Anomaly Detector"]
-        INFERENCE_API["Python FastAPI Endpoint"]
-    end
-
-    subgraph Backend_Core ["Spring Boot 21 Backend Core"]
-        JWT_AUTH["Spring Security & JWT"]
-        EVENT_BUS["Async Security Event Bus"]
-        RISK_ENGINE["Dynamic Risk Scoring Engine"]
-        MITRE_MAPPER["MITRE ATT&CK Mapping Module"]
-        HEAL_ENGINE["Self-Healing Orchestrator"]
-    end
-
-    subgraph Deception_Subsystem ["Adaptive Deception Subsystem"]
-        HONEY_MGR["Dynamic Trap Controller"]
-        TRAP_SSH["SSH Honeypot"]
-        TRAP_HTTP["HTTP Web Trap"]
-    end
-
-    subgraph External_Feeds ["External Threat Intelligence"]
-        VT_API["VirusTotal API v3"]
-        ABUSE_API["AbuseIPDB API v2"]
-    end
-
-    subgraph Storage_Presentation ["Persistence & Management"]
-        MYSQL_DB[("MySQL 8.0 Database")]
-        REDIS_CACHE[("Redis Cache")]
-        SOC_UI["Next.js 14 SOC Dashboard"]
-    end
-
-    NET_TAP --> FLOW_EXTRACT
-    FLOW_EXTRACT -->|84 Feature Vector| INFERENCE_API
-    INFERENCE_API --> MODEL_RF & MODEL_XGB & MODEL_AE
-    MODEL_RF & MODEL_XGB & MODEL_AE -->|Threat Label & Confidence| EVENT_BUS
-    EVENT_BUS --> RISK_ENGINE & MITRE_MAPPER
-    MITRE_MAPPER <--> External_Feeds
-    HEAL_ENGINE -->|eBPF / iptables| NET_TAP
-    HEAL_ENGINE -->|Spawn & Divert| HONEY_MGR
-    HONEY_MGR --> TRAP_SSH & TRAP_HTTP
-    EVENT_BUS --> MYSQL_DB & REDIS_CACHE
-    EVENT_BUS -->|Stomp WebSocket| SOC_UI
+```
+                                  ┌────────────────────────────────┐
+                                  │      Next.js 15 SOC Console    │
+                                  │      (Port 3000 | App Router)  │
+                                  └───────────────┬────────────────┘
+                                                  │ REST + STOMP WebSocket
+                                                  ▼
+┌─────────────────────────┐       ┌────────────────────────────────┐       ┌─────────────────────────┐
+│     AI Engine (FastAPI)  │ ◄───► │   Spring Boot Backend Core     │ ◄───► │  Cowrie Honeypot Sidecar│
+│  RandomForest Classifier│       │   (Port 8080 | Java 21 LTS)    │       │  (FastAPI on Port 6000) │
+│      (Port 5000)        │       └───────┬───────────────┬────────┘       └─────────────────────────┘
+└─────────────────────────┘               │               │
+                                          ▼               ▼
+                              ┌──────────────────┐ ┌───────────────┐
+                              │ MySQL 8 Database │ │ Redis 7 Cache │
+                              │   (Port 3307)    │ │  (Port 6379)  │
+                              └──────────────────┘ └───────────────┘
+                                          ▲               ▲
+                                          │               │
+                              ┌───────────┴───────────────┴────────┐
+                              │      Eclipse Mosquitto (1883)      │
+                              │ ◄── IoT Edge Security Agent Daemon │
+                              └────────────────────────────────────┘
+                                          │
+                              ┌───────────┴────────────────────────┐
+                              │  eBPF/XDP Kernel Defense Collector │
+                              │   (Port 7000 | veth_raksha0 probe) │
+                              └────────────────────────────────────┘
 ```
 
 ---
 
-## 📦 Core Features & Modules
+## Key Features
 
-### 1. Intelligent Intrusion Detection System (IIDS)
-Captures raw packet streams via Scapy and passes network flow windows to CICFlowMeter to generate 84 distinct statistical features. The Python AI Core evaluates these using an ensemble of Random Forest, XGBoost, and Deep Autoencoders.
-
-### 2. Automated Self-Healing Network Engine
-Provides automated containment upon validation of critical threats:
-- **eBPF / XDP Packet Drop**: Injects low-level network packet filter rules to drop attacker traffic at the NIC driver layer.
-- **Dynamic iptables & Socket Termination**: Kills active TCP sessions associated with compromised credentials instantly.
-
-### 3. Adaptive Honeypot Subsystem
-Dynamically spins up isolated, low/medium-interaction Docker containers mimicking SSH daemons or IoT Telnet interfaces, diverting suspicious IPs to capture forensic telemetry and keystrokes.
-
-### 4. MITRE ATT&CK & Threat Intelligence Engine
-- Maps behaviors to specific Tactics, Techniques, and Procedures (TTPs) using the official MITRE ATT&CK Matrix.
-- Queries AbuseIPDB and VirusTotal via async workers to enrich logs with IP reputation and geographic data.
+- 🛡️ **Executive SOC Dashboard (`/dashboard`):** Real-time threat radar, dynamic risk gauge, global geo-threat map, live incoming flow stream, and instant attack distribution breakdown.
+- ⚡ **AI Threat Inference Engine (`/ai`):** Sub-10ms classification using an ensemble `RandomForestClassifier` trained on 84-element CICFlowMeter network flow vectors with Gini feature attribution.
+- 🐧 **eBPF/XDP Kernel Defense Module (`/system-health`):** BPF C probe attached via Generic XDP (`xdpgeneric`) to a dedicated virtual test interface (`veth_raksha0`) reading live BPF map packet and byte counters.
+- 🪤 **Cowrie Honeypot Sandboxing (`/honeypots`):** Isolated SSH deception containers running on an internal Docker bridge (`172.30.0.0/24`) with live terminal keystroke and command streaming.
+- 📡 **IoT Edge Security Daemon:** Python daemon sampling `/proc` metrics (CPU, RAM, sockets) on host gateways, evaluating local anomaly rules, and publishing over Mosquitto MQTT.
+- 🎯 **MITRE ATT&CK Matrix Visualization (`/mitre`):** Dynamic enterprise grid mapping live threat alerts against tactics including Initial Access (T1110, T1190), Execution (T1059), Discovery (T1046), and Impact (T1498).
+- 🔄 **Self-Healing & Remediation (`/alerts`):** One-click threat mitigation supporting eBPF drop rules, honeypot diversion, and action reversion with non-repudiation cryptographic audit logs.
+- 🔐 **Zero-Trust Security & RBAC:** Stateless HMAC-SHA256 JWT tokens (24-hour expiration), RFC 6238 TOTP Two-Factor Authentication, and role-based access control (`ROLE_ADMIN`, `ROLE_SOC_ANALYST`, `ROLE_USER`).
+- 🌐 **Reactive Threat Intelligence:** WebClient-driven enrichment fetching reputation and ISP metadata from VirusTotal v3 and AbuseIPDB v2 with RFC 1918 internal bypass.
 
 ---
 
-## 🛠️ Technology Stack
+## Technology Stack
 
-| Domain | Technology | Role & Purpose |
-| :--- | :--- | :--- |
-| **Frontend UI** | **Next.js 14, React, Tailwind CSS** | High-performance React App Router for SOC dashboard. |
-| **Backend Core** | **Java 21, Spring Boot 3.2** | Enterprise microservices, OOP components, and business logic. |
-| **Security** | **Spring Security, Nimbus JOSE JWT** | Role-based access control (RBAC), API rate-limiting, authentication. |
-| **Database** | **MySQL 8.0, Redis 7.2** | Relational storage for audit logs and high-speed caching. |
-| **AI / Machine Learning** | **Python 3.11, FastAPI, Scikit-Learn** | Threat inference server and multi-model ensemble classifiers. |
-| **DevOps** | **Docker, Docker Compose, Nginx** | Fully containerized environment orchestration and reverse proxy. |
+| Domain | Technology | Version | Purpose |
+|---|---|---|---|
+| **Frontend** | Next.js | 15.x | App Router SOC dashboard console |
+| | React | 19.x | Component rendering & state hydration |
+| | TypeScript | 5.x | Type safety across models and API clients |
+| | Tailwind CSS | 3.4.x | Dark cybernetic theme design system |
+| | Zustand | 4.5.x | Modular client state management |
+| | STOMP / SockJS | — | Real-time WebSocket event ingestion |
+| **Backend Core** | Spring Boot | 3.2.x | Microservice orchestration & REST API |
+| | Java | 21 LTS | OpenJDK backend runtime |
+| | Spring Security | 6.x | Stateless JWT filter & RBAC rules |
+| | Spring Data JPA | 3.2.x | Object-relational mapping (Hibernate) |
+| | Eclipse Paho | 1.2.x | MQTT consumer for IoT edge telemetry |
+| **AI Inference** | FastAPI | 0.110+ | High-throughput sub-10ms REST API |
+| | scikit-learn | 1.x | Pre-trained RandomForestClassifier |
+| | NumPy / Pandas | — | Feature vector scaling & normalization |
+| **Kernel & Sandboxing** | eBPF / XDP | C (clang/LLVM) | Linux kernel packet filtering & map stats |
+| | Cowrie | latest | SSH / Telnet medium-interaction honeypot |
+| | Docker SDK (Python) | — | Sidecar container lifecycle management |
+| **Infrastructure** | MySQL | 8.0 | Primary relational persistence (port 3307) |
+| | Redis | 7-alpine | Per-IP sliding window rate limiting (port 6379) |
+| | Eclipse Mosquitto | latest | MQTT broker for IoT devices (port 1883) |
 
 ---
 
-## 💻 Installation & Setup Guide
+## Repository Structure
+
+```
+RakshaSphere/
+├── .env.example                       Template environment configuration file
+├── README.md                          Project entrypoint and architectural summary
+├── DOCUMENTATION_VERIFICATION.md      Verification audit against codebase
+├── CLEANUP_REPORT.md                  Cleanup and modernization report
+├── ai-engine/                         FastAPI AI Inference Engine (:5000)
+│   ├── inference_server.py            FastAPI endpoints (/predict, /explain, /health)
+│   ├── inference/pipeline.py          Feature scaling and RandomForest prediction
+│   ├── models/                        Trained classifier.pkl, scaler.pkl, manifest.json
+│   └── preprocessing/                 Feature schema (84 CICFlowMeter names)
+├── backend/                           Spring Boot 3.2 Core Backend (:8080)
+│   ├── src/main/java/com/rakshasphere/
+│   │   ├── config/                    WebMvc, CORS, Rate Limit, WebSocket configs
+│   │   ├── controller/                REST API Controllers (11 controllers)
+│   │   ├── health/                    Spring Actuator health indicators (9 subsystems)
+│   │   ├── model/entity/              JPA Entities (User, Alert, Honeypot, etc.)
+│   │   ├── security/                  JWT Provider, Filter, SecurityConfig
+│   │   └── service/                   Business logic, eBPF JNI driver, Threat Intel
+│   └── src/main/resources/ebpf/       eBPF C source (rakshasphere_xdp.bpf.c) & ELF (.o)
+├── database/                          Database Schema & Initialization
+│   └── init.sql                       MySQL master bootstrap script and seed data
+├── docker/                            Container Orchestration
+│   └── docker-compose.yml             Complete multi-service host-network orchestration
+├── docs/                              Authoritative Documentation Package
+│   ├── SYSTEM_OVERVIEW.md             System design, boundaries, and tech stack
+│   ├── ARCHITECTURE.md                Network topology, communication matrix, JNI note
+│   ├── API_REFERENCE.md               REST & WebSocket STOMP API documentation
+│   ├── AUTHENTICATION.md              JWT lifecycle, TOTP MFA, RBAC permissions
+│   ├── AI_ENGINE.md                   RandomForest classifier & synthetic data disclosure
+│   ├── DATABASE.md                    MySQL schema, indexes, and JPA entity definitions
+│   ├── MITRE_ATTACK.md                Static framework metadata vs observed telemetry
+│   ├── HONEYPOT.md                    Cowrie honeypot sandboxing & event streaming
+│   ├── EBPF.md                        Generic XDP kernel probe vs JNI stub driver
+│   ├── IOT_AGENT.md                   Host metric sampling & MQTT messaging
+│   ├── THREAT_INTEL.md                VirusTotal v3 & AbuseIPDB v2 reactive pipeline
+│   ├── frontend/FRONTEND_GUIDE.md     Next.js 15 App router guide & Zustand stores
+│   ├── backend/BACKEND_GUIDE.md       Spring Boot Java 21 architecture guide
+│   ├── infrastructure/DEPLOYMENT_LOCAL.md Local Docker Compose operations guide
+│   └── testing/TESTING_GUIDE.md       JUnit, frontend auth, and dry run test suites
+├── ebpf-collector/                    Linux Kernel eBPF Telemetry Collector (:7000)
+│   ├── collector.py                   FastAPI daemon reading bpftool kernel map counters
+│   └── Dockerfile                     Privileged Linux container definition
+├── frontend/                          Next.js 15 SOC Analyst Console (:3000)
+│   ├── src/app/                       App router pages (/dashboard, /alerts, /mitre, etc.)
+│   ├── src/components/                Modular UI cards, modals, tables, and guards
+│   ├── src/services/api.ts            Unified REST API client layer
+│   └── src/store/                     Zustand stores (useAlertStore, useAuthStore, etc.)
+├── honeypot-manager/                  Cowrie Honeypot Lifecycle Manager (:6000)
+│   ├── manager.py                     FastAPI sidecar controlling Docker daemon
+│   └── Dockerfile                     Container definition with Docker socket access
+└── iot-agent/                         IoT Edge Security Daemon
+    ├── agent.py                       Python daemon reading /proc and evaluating rules
+    └── config.json                    Device ID, MQTT broker, and threshold configuration
+```
+
+---
+
+## Service Topology & Port Allocations
+
+| Service Name | Container Name | Port (Host) | Protocol | Internal Network / Mode |
+|---|---|---|---|---|
+| **Next.js Frontend** | `raksha-frontend` | `3000` | HTTP | Host Network Mode |
+| **Spring Boot Backend**| `raksha-backend` | `8080` | HTTP / WS | Host Network Mode |
+| **FastAPI AI Engine** | `raksha-ai-engine` | `5000` | HTTP | Host Network Mode |
+| **Honeypot Manager** | `raksha-honeypot-manager` | `6000` | HTTP | Host Network Mode |
+| **eBPF Collector** | `raksha-ebpf-collector` | `7000` | HTTP | Host (Privileged) |
+| **MySQL 8.0** | `raksha-mysql` | `3307` (ext) → `3306` | JDBC | Bridge / Port mapping |
+| **Redis 7** | `raksha-redis` | `6379` | RESP | Host Network Mode |
+| **Mosquitto MQTT** | `raksha-mosquitto` | `1883` | MQTT | Host Network Mode |
+| **Cowrie SSH Honeypot**| Spawned on demand | `2222` | SSH | `honeypot_net` (`172.30.0.0/24`) |
+
+---
+
+## Quick Start Guide
 
 ### Prerequisites
-- Docker Engine `v25.0+` & Docker Compose
-- Java Development Kit `OpenJDK 21 LTS`
-- Node.js `v20.x`
-- Python `v3.11+`
+- **Linux OS** (Ubuntu 22.04 LTS / Debian recommended for eBPF kernel support)
+- **Docker Engine** 24.0+ & **Docker Compose** 2.20+
+- **System Specs:** 4 Cores, 8 GB RAM, 20 GB Disk
 
-### Quickstart via Docker Compose (Production Ready)
+### Step-by-Step Launch
 
 ```bash
 # 1. Clone repository
-git clone https://github.com/fardeenakmal/RakshaSphere-V1.git
-cd RakshaSphere-V1
+git clone https://github.com/fardeenakmal/RakshaSphere.git
+cd RakshaSphere
 
-# 2. Configure Environment Variables
-cp docker/.env.example docker/.env
+# 2. Configure environment
+cp .env.example .env
 
-# 3. Build and launch all services
-docker compose -f docker/docker-compose.yml up --build -d
+# 3. Build images and start all services
+cd docker
+docker compose up -d --build
+
+# 4. Check container health
+docker compose ps
 ```
 
-Once launched, access the system:
-- **SOC Dashboard**: `http://localhost:3000` (Login: `admin` / `Admin@Raksha2026!`)
-- **Backend API**: `http://localhost:8080/api/v1`
-- **AI Inference Engine**: `http://localhost:5000/docs`
+### Default Credentials
+
+| Username | Password | Role | Description |
+|---|---|---|---|
+| `admin` | `Admin@Raksha2026!` | `ROLE_ADMIN` | Full access to user management, settings, & self-healing |
+| `analyst_mike` | `Admin@Raksha2026!` | `ROLE_SOC_ANALYST`| Triage capabilities, containment, & audit log viewing |
 
 ---
 
-## 🗺️ Project Status & Roadmap
+## Service Verification & Health Checks
 
-The project is currently in a **Production-Ready** state.
+Once the platform is running, test the core services via terminal:
 
-```mermaid
-gantt
-    title RakshaSphere Engineering Roadmap
-    dateFormat  YYYY-MM-DD
-    section Phase 1 & 2: Architecture & AI
-    Core Setup & AI Inference Server         :done, p1, 2025-01-01, 2025-06-30
-    section Phase 3: Intel & Risk Engine
-    MITRE ATT&CK & Risk Scoring Formula      :done, p2, 2025-07-01, 2025-10-31
-    section Phase 4: Self-Healing & SOC
-    eBPF Orchestrator & Next.js SOC          :done, p3, 2025-11-01, 2026-01-31
-    section Phase 5: Production Hardening
-    Zero Trust, Auth Fixes, Audit Logging    :done, p4, 2026-02-01, 2026-08-09
+```bash
+# 1. Verify Spring Boot Actuator health probe matrix
+curl -s http://localhost:8080/actuator/health | jq .
+
+# 2. Test AI Engine classification pipeline
+curl -s http://localhost:5000/health | jq .
+
+# 3. Test Honeypot Manager status
+curl -s http://localhost:6000/health | jq .
+
+# 4. Check real eBPF kernel attachment & map counters
+curl -s http://localhost:7000/api/ebpf/status | jq .
+
+# 5. Execute Backend JUnit test suite
+cd ../backend && ./mvnw test
+
+# 6. Execute Frontend Auth test suite
+cd ../frontend && npx tsx src/tests/auth_cases.test.ts
 ```
 
 ---
 
-## 📄 License
+## Documentation Index
 
-This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for complete terms. Developed and maintained by Fardeen Akmal.
+Explore the comprehensive documentation suite in the [`docs/`](file:///home/fardeen/RakshaSphere/docs/) directory:
+
+- 📖 **[System Overview](docs/SYSTEM_OVERVIEW.md)** — Architectural vision, module roles, and technology matrix.
+- 📐 **[Architecture Specification](docs/ARCHITECTURE.md)** — Deep dive into container topologies, communications, and backend packages.
+- 📡 **[REST & STOMP API Reference](docs/API_REFERENCE.md)** — Complete endpoint parameters, DTOs, and error codes.
+- 🔑 **[Authentication & Security](docs/AUTHENTICATION.md)** — JWT generation, TOTP MFA verification, and RBAC matrix.
+- 🧠 **[AI Inference Engine](docs/AI_ENGINE.md)** — Model schema, 84-feature CICFlowMeter layout, and synthetic data notices.
+- 🗄️ **[Database & Persistence](docs/DATABASE.md)** — MySQL 8 schema, JPA entity mapping, and automated backups.
+- 🎯 **[MITRE ATT&CK Integration](docs/MITRE_ATTACK.md)** — Framework metadata vs dynamic database telemetry.
+- 🍯 **[Honeypot Deception](docs/HONEYPOT.md)** — Cowrie container sandboxing, event ingestion, and terminal streaming.
+- 🛡️ **[eBPF / XDP Defense Module](docs/EBPF.md)** — Generic XDP kernel probe details vs JNI driver simulation.
+- 📟 **[IoT Edge Subsystem](docs/IOT_AGENT.md)** — Linux `/proc` sampling, edge anomaly detection, and Mosquitto broker.
+- 🌐 **[Threat Intelligence Service](docs/THREAT_INTEL.md)** — VirusTotal v3 and AbuseIPDB v2 reactive WebClient enrichment.
+- 💻 **[Frontend Developer Guide](docs/frontend/FRONTEND_GUIDE.md)** — Next.js 15 App router structure, Zustand stores, and styling.
+- ☕ **[Backend Developer Guide](docs/backend/BACKEND_GUIDE.md)** — Spring Boot 3.2 Java 21 service architecture.
+- 🚀 **[Local Deployment Guide](docs/infrastructure/DEPLOYMENT_LOCAL.md)** — Docker Compose step-by-step operations.
+- 🧪 **[Testing & Verification Guide](docs/testing/TESTING_GUIDE.md)** — Automated test execution across backend, frontend, and AI.
+
+---
+
+## Engineering Disclaimers & Scope
+
+1. **Target Deployment Scope:** RakshaSphere is designed and validated specifically for **local multi-container college demonstration and cybersecurity research**. It is not configured for public internet exposure without network perimeter hardening and credential rotation.
+2. **AI Model Training:** The machine learning classifier is trained on **synthetic Gaussian-cluster network flow vectors**. The 100% test metrics reflect synthetic separability and require validation against live PCAP datasets (e.g., CIC-IDS2017) prior to production deployment.
+3. **eBPF Scope:** The eBPF telemetry collector attaches in **Generic XDP mode** (`xdpgeneric`) to a dedicated virtual test interface (`veth_raksha0`), not to the physical hardware root NIC.
+
+---
+
+*RakshaSphere (रक्षाSphere) — Developed for College Academic Demonstration & Cyber Defense Research.*

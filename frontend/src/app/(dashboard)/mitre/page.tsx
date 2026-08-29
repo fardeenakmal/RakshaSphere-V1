@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Grid3X3, Search, Filter, Layers, ShieldAlert, Clock, Activity, AlertTriangle, FileText } from 'lucide-react';
+import { Grid3X3, Search, Filter, Layers, Activity, FileText } from 'lucide-react';
 import { MITRE_TACTICS } from '@/data/mitreTactics';
 import { MitreTechnique, Severity, Alert } from '@/types';
 import { useAlertStore } from '@/store/useAlertStore';
@@ -38,7 +38,7 @@ export default function MitrePage() {
       });
   }, [fetchAlerts]);
 
-  // Compute dynamic activity counts & telemetry observations from database alerts
+  // Compute dynamic activity counts & telemetry observations from real database alerts
   const computedTactics = MITRE_TACTICS.map((group) => ({
     ...group,
     techniques: group.techniques.map((tech) => {
@@ -123,7 +123,6 @@ export default function MitrePage() {
     (g) => g.techniques.some((t) => t.count > 0)
   ).length;
 
-  // Selected technique matching alerts for detail modal
   const selectedTechniqueAlerts = selectedTechnique
     ? alerts.filter(
         (a) =>
@@ -133,37 +132,42 @@ export default function MitrePage() {
     : [];
 
   return (
-    <div className="space-y-6 pb-8">
+    <div className="space-y-5 pb-8 font-mono">
       {/* Title Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800/80 pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/[0.06] pb-4">
         <div>
-          <h1 className="text-xl md:text-2xl font-extrabold text-slate-100 flex items-center gap-2 tracking-tight">
-            MITRE ATT&CK MATRIX (v14.1 ALIGNED)
-          </h1>
-          <p className="text-xs font-mono text-slate-400 mt-1">
+          <div className="flex items-center gap-2.5">
+            <h1 className="text-xl md:text-2xl font-extrabold text-slate-100 tracking-tight">
+              MITRE ATT&CK MATRIX (v14.1 ALIGNED)
+            </h1>
+            <span className="px-2 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-[10px] font-bold">
+              STIX 2.1
+            </span>
+          </div>
+          <p className="text-xs text-slate-400 mt-1">
             Enterprise Threat Tactics, Techniques & Procedures (TTP) Correlation Heatmap
           </p>
         </div>
 
-        <div className="flex items-center gap-2 font-mono text-xs text-slate-300 bg-slate-900 px-3.5 py-2 rounded-xl border border-slate-800">
-          <Grid3X3 className="w-4 h-4 text-cyan-400" />
-          <span>STIX 2.1 Telemetry Active</span>
+        <div className="flex items-center gap-2 text-xs text-slate-300 bg-slate-950 px-3 py-1.5 rounded-lg border border-white/10">
+          <Grid3X3 className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+          <span>STIX 2.1 Framework Telemetry Active</span>
         </div>
       </div>
 
-      {/* Coverage Metrics Summary Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+      {/* Coverage Metrics Summary Grid (4 Columns) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3.5">
         <div className="soc-card p-4 flex flex-col justify-between">
           <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider font-semibold">
             COVERED TECHNIQUES
           </span>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-extrabold font-mono text-emerald-400 tabular-nums">
+            <span className="text-2xl md:text-3xl font-extrabold font-mono text-emerald-400 tabular-nums">
               {totalCoveredTechniques}
             </span>
-            <span className="text-slate-400 text-xs font-mono">Mapped TTPs</span>
+            <span className="text-slate-400 text-xs">Mapped TTPs</span>
           </div>
-          <span className="text-[10px] text-slate-400 font-mono mt-2">TA0001 to TA0011 Coverage</span>
+          <span className="text-[10px] text-slate-500 mt-2">TA0001 to TA0011 Coverage</span>
         </div>
 
         <div className="soc-card p-4 flex flex-col justify-between">
@@ -171,143 +175,143 @@ export default function MitrePage() {
             OBSERVED RAKSHASPHERE EVENTS
           </span>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-extrabold font-mono text-cyan-400 tabular-nums">
+            <span className="text-2xl md:text-3xl font-extrabold font-mono text-cyan-300 tabular-nums">
               {totalObservedEvents}
             </span>
-            <span className="text-slate-400 text-xs font-mono">Telemetry Hits</span>
+            <span className="text-slate-400 text-xs">Telemetry Hits</span>
           </div>
-          <span className="text-[10px] text-slate-400 font-mono mt-2">Real Database Alert Telemetry</span>
+          <span className="text-[10px] text-slate-500 mt-2">Real Database Alert Telemetry</span>
         </div>
 
         <div className="soc-card p-4 flex flex-col justify-between">
           <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider font-semibold">
-            OBSERVED ACTIVE TACTICS
+            ACTIVE OBSERVED TACTICS
           </span>
           <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-extrabold font-mono text-amber-400 tabular-nums">
+            <span className="text-2xl md:text-3xl font-extrabold font-mono text-amber-400 tabular-nums">
               {activeTacticsCount}
             </span>
-            <span className="text-slate-400 text-xs font-mono">/ {computedTactics.length} Tactics</span>
+            <span className="text-slate-400 text-xs">/ {computedTactics.length} Tactics</span>
           </div>
-          <span className="text-[10px] text-slate-400 font-mono mt-2">Tactics with Telemetry</span>
+          <span className="text-[10px] text-slate-500 mt-2">Tactics with Telemetry</span>
         </div>
 
         <div className="soc-card p-4 flex flex-col justify-between">
           <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider font-semibold">
             FRAMEWORK ALIGNMENT
           </span>
-          <div className="mt-2 flex items-center gap-2">
+          <div className="mt-2">
             <StatusBadge status="HEALTHY" size="sm" labelOverride="v14.1 ALIGNED" />
           </div>
-          <span className="text-[10px] text-slate-400 font-mono mt-2">Enterprise Matrix STIX 2.1</span>
+          <span className="text-[10px] text-slate-500 mt-2">Enterprise Matrix STIX 2.1</span>
         </div>
       </div>
 
-      {/* Filter Bar Controls & Legend */}
-      <div className="soc-card p-4 space-y-4 font-mono text-xs">
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+      {/* Filter Controls & Legend */}
+      <div className="soc-card p-4 space-y-3.5 text-xs">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
           {/* Search Box */}
           <div className="relative flex-1 w-full">
-            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search Technique ID (e.g. T1110), Name, or Tactic..."
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 font-mono"
+              placeholder="Search Technique ID (e.g. T1110), name, or tactic..."
+              className="w-full bg-slate-950 border border-white/10 rounded-lg pl-9 pr-3 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500/60 focus:ring-1 focus:ring-cyan-500/30 font-mono transition"
             />
           </div>
 
           {/* Severity Filter */}
           <div className="flex items-center gap-2 w-full sm:w-auto">
-            <Filter className="w-4 h-4 text-slate-400 shrink-0" />
+            <Filter className="w-3.5 h-3.5 text-slate-400 shrink-0" />
             <select
               value={selectedSeverity}
               onChange={(e) => setSelectedSeverity(e.target.value as Severity | 'ALL')}
-              className="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-300 focus:outline-none focus:border-cyan-500/50 cursor-pointer font-mono"
+              className="bg-slate-950 border border-white/10 rounded-lg px-3 py-2 text-xs text-slate-300 focus:outline-none focus:border-cyan-500/60 cursor-pointer font-mono"
             >
               <option value="ALL">Observed Severity: All</option>
-              <option value="CRITICAL">Critical</option>
-              <option value="HIGH">High</option>
-              <option value="MEDIUM">Medium</option>
-              <option value="LOW">Low</option>
+              <option value="CRITICAL">Critical Severity</option>
+              <option value="HIGH">High Severity</option>
+              <option value="MEDIUM">Medium Severity</option>
+              <option value="LOW">Low Severity</option>
             </select>
           </div>
         </div>
 
-        {/* Legend Row */}
-        <div className="pt-3 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3 text-[11px] text-slate-400">
-          <span className="text-slate-300 font-bold">Observed Telemetry Status:</span>
-          <div className="flex flex-wrap items-center gap-4">
+        {/* Heatmap Legend */}
+        <div className="pt-2.5 border-t border-white/[0.06] flex flex-wrap items-center justify-between gap-2.5 text-[11px] text-slate-400">
+          <span className="text-slate-300 font-bold uppercase text-[10px]">Heatmap Activity Legend:</span>
+          <div className="flex flex-wrap items-center gap-3">
             <span className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded bg-red-500/30 border border-red-500" /> Critical Severity Alert
+              <span className="w-2.5 h-2.5 rounded-sm bg-rose-500/30 border border-rose-500" /> Critical Ingress
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded bg-amber-500/30 border border-amber-500" /> High Severity Alert
+              <span className="w-2.5 h-2.5 rounded-sm bg-amber-500/30 border border-amber-500" /> High Ingress
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded bg-cyan-500/30 border border-cyan-500" /> Medium / Low Alert
+              <span className="w-2.5 h-2.5 rounded-sm bg-cyan-500/30 border border-cyan-500" /> Medium/Low Alert
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded bg-slate-900 border border-slate-800" /> Unobserved (0 Events)
+              <span className="w-2.5 h-2.5 rounded-sm bg-slate-900 border border-white/10" /> Nominal (0 Events)
             </span>
           </div>
         </div>
       </div>
 
-      {/* Interactive Matrix Grid Container */}
+      {/* Interactive Matrix Grid Container (Horizontal Scroll with sticky headers) */}
       <div className="soc-card p-4 max-w-full overflow-x-auto custom-scrollbar">
-        <div className="flex gap-4 min-w-[1100px]">
+        <div className="flex gap-3.5 min-w-[1150px]">
           {filteredTactics.map((group) => (
-            <div key={group.tacticId} className="flex-1 min-w-[180px] space-y-3 font-mono">
-
+            <div key={group.tacticId} className="flex-1 min-w-[185px] space-y-2.5">
               {/* Tactic Group Column Header */}
-              <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-center">
+              <div className="p-3 rounded-lg bg-slate-950 border border-white/10 text-center sticky top-0 z-10">
                 <span className="text-[10px] text-cyan-400 font-bold block">{group.tacticId}</span>
-                <span className="text-xs font-extrabold text-slate-100 truncate block mt-0.5">{group.name}</span>
+                <span className="text-xs font-bold text-slate-100 truncate block mt-0.5">{group.name}</span>
                 <span className="text-[10px] text-slate-500 mt-1 block">
                   {group.techniques.length} Techniques
                 </span>
               </div>
 
-              {/* Techniques Cards in Tactic */}
+              {/* Technique Cards in Tactic */}
               <div className="space-y-2">
                 {group.techniques.length > 0 ? (
                   group.techniques.map((tech) => {
                     const isCritical = tech.count > 0 && tech.severity === 'CRITICAL';
                     const isHigh = tech.count > 0 && tech.severity === 'HIGH';
                     const isMedium = tech.count > 0 && (tech.severity === 'MEDIUM' || tech.severity === 'LOW');
-                    const isUnobserved = tech.count === 0;
 
                     return (
                       <button
                         key={tech.id}
                         onClick={() => setSelectedTechnique(tech)}
-                        className={`w-full text-left p-3 rounded-xl border transition-all text-xs ${
+                        className={`w-full text-left p-2.5 rounded-lg border transition-all text-xs cursor-pointer ${
                           isCritical
-                            ? 'bg-red-500/10 border-red-500/40 text-red-300 hover:bg-red-500/20'
+                            ? 'bg-rose-500/10 border-rose-500/40 text-rose-300 hover:bg-rose-500/20'
                             : isHigh
                             ? 'bg-amber-500/10 border-amber-500/40 text-amber-300 hover:bg-amber-500/20'
                             : isMedium
                             ? 'bg-cyan-500/10 border-cyan-500/40 text-cyan-300 hover:bg-cyan-500/20'
-                            : 'bg-slate-900/60 border-slate-800/80 text-slate-400 hover:bg-slate-800/80 hover:text-slate-300'
+                            : 'bg-slate-950/60 border-white/[0.04] text-slate-400 hover:bg-slate-900 hover:text-slate-200'
                         }`}
                       >
                         <div className="flex items-center justify-between font-bold">
-                          <span className="text-emerald-400 text-[10px] font-mono">{tech.id}</span>
+                          <span className="text-emerald-400 text-[10px]">{tech.id}</span>
                           <span
-                            className={`px-1.5 py-0.5 text-[9px] font-bold rounded font-mono tabular-nums ${
+                            className={`px-1.5 py-0.2 rounded font-bold text-[9px] tabular-nums ${
                               tech.count > 0
-                                ? 'bg-slate-950 text-cyan-400 border border-cyan-500/30'
-                                : 'bg-slate-950/80 text-slate-500 border border-slate-800'
+                                ? 'bg-slate-950 text-cyan-300 border border-cyan-500/30'
+                                : 'bg-slate-950/80 text-slate-500 border border-white/[0.04]'
                             }`}
                           >
                             {tech.count}
                           </span>
                         </div>
-                        <div className="font-semibold text-slate-200 mt-1 line-clamp-2">{tech.name}</div>
+                        <div className="font-semibold text-slate-200 mt-1 line-clamp-2 text-[11px]">
+                          {tech.name}
+                        </div>
                         {tech.count > 0 && (
-                          <div className="text-[9px] text-slate-400 mt-1.5 truncate">
+                          <div className="text-[9px] text-slate-500 mt-1.5 truncate">
                             Last: {tech.lastSeen}
                           </div>
                         )}
@@ -315,7 +319,7 @@ export default function MitrePage() {
                     );
                   })
                 ) : (
-                  <div className="p-3 text-center text-[10px] text-slate-600 bg-slate-950/50 rounded-xl border border-slate-900">
+                  <div className="p-2.5 text-center text-[10px] text-slate-500 bg-slate-950/40 rounded-lg border border-white/[0.04]">
                     No matching TTPs
                   </div>
                 )}
@@ -331,97 +335,96 @@ export default function MitrePage() {
         onClose={() => setSelectedTechnique(null)}
         title={
           selectedTechnique ? (
-            <div className="flex items-center gap-3">
-              <span className="text-emerald-400 font-mono">{selectedTechnique.id}:</span>
+            <div className="flex items-center gap-2.5">
+              <span className="text-emerald-400">{selectedTechnique.id}:</span>
               <span>{selectedTechnique.name}</span>
             </div>
           ) : ''
         }
-        subtitle={selectedTechnique ? `Tactic Group: ${selectedTechnique.tactic}` : ''}
+        subtitle={selectedTechnique ? `Tactic Category: ${selectedTechnique.tactic}` : ''}
         icon={<Layers className="w-5 h-5 text-cyan-400" />}
         size="lg"
         footer={
-          <div className="w-full flex items-center justify-between font-mono text-[10px] text-slate-400">
+          <div className="w-full flex items-center justify-between text-[10px] text-slate-400">
             <span>STIX 2.1 Technique Standard</span>
-            <Button size="sm" variant="secondary" onClick={() => setSelectedTechnique(null)}>
+            <Button size="xs" variant="secondary" onClick={() => setSelectedTechnique(null)}>
               Close
             </Button>
           </div>
         }
       >
         {selectedTechnique && (
-          <div className="space-y-6 font-mono text-xs">
-
+          <div className="space-y-5 font-mono text-xs">
             {/* SECTION A: OFFICIAL MITRE ATT&CK METADATA */}
-            <div className="space-y-3 border-b border-slate-800 pb-5">
+            <div className="space-y-3 border-b border-white/[0.06] pb-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-xs font-extrabold uppercase text-cyan-400 tracking-wider flex items-center gap-2">
-                  <FileText className="w-4 h-4" />
+                <h3 className="text-xs font-bold uppercase text-cyan-300 tracking-wider flex items-center gap-2">
+                  <FileText className="w-3.5 h-3.5" />
                   MITRE ATT&CK Framework Metadata
                 </h3>
-                <span className="text-[10px] bg-slate-900 border border-slate-800 px-2 py-0.5 rounded text-slate-400">
+                <span className="text-[10px] bg-slate-950 border border-white/10 px-2 py-0.5 rounded text-slate-400">
                   Version 14.1
                 </span>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
-                  <span className="text-slate-500 text-[10px] block">TECHNIQUE ID & NAME</span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <div className="p-3 rounded-lg bg-slate-950 border border-white/[0.06]">
+                  <span className="text-slate-500 text-[10px] block uppercase">TECHNIQUE ID & NAME</span>
                   <span className="text-slate-200 font-bold block mt-0.5">
                     {selectedTechnique.id} — {selectedTechnique.name}
                   </span>
                 </div>
-                <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
-                  <span className="text-slate-500 text-[10px] block">TACTIC CATEGORY</span>
-                  <span className="text-cyan-400 font-bold block mt-0.5">
+                <div className="p-3 rounded-lg bg-slate-950 border border-white/[0.06]">
+                  <span className="text-slate-500 text-[10px] block uppercase">TACTIC GROUP</span>
+                  <span className="text-cyan-300 font-bold block mt-0.5">
                     {selectedTechnique.tactic}
                   </span>
                 </div>
               </div>
 
-              <div className="space-y-1.5">
-                <span className="text-slate-500 text-[10px] block">DESCRIPTION & ATTACK PATTERN</span>
-                <p className="text-slate-300 leading-relaxed bg-slate-950 p-3.5 rounded-xl border border-slate-800 text-[11px]">
+              <div className="space-y-1">
+                <span className="text-slate-500 text-[10px] block uppercase">DESCRIPTION</span>
+                <p className="text-slate-300 leading-relaxed bg-slate-950 p-3 rounded-lg border border-white/[0.06] text-[11px]">
                   {selectedTechnique.description}
                 </p>
               </div>
 
-              <div className="space-y-1.5">
-                <span className="text-slate-500 text-[10px] block">AUTONOMOUS MITIGATION PLAYBOOK</span>
-                <p className="text-emerald-400 leading-relaxed bg-emerald-500/10 p-3.5 rounded-xl border border-emerald-500/30 text-[11px]">
+              <div className="space-y-1">
+                <span className="text-slate-500 text-[10px] block uppercase">AUTONOMOUS MITIGATION PLAYBOOK</span>
+                <p className="text-emerald-300 leading-relaxed bg-emerald-500/10 p-3 rounded-lg border border-emerald-500/20 text-[11px]">
                   {selectedTechnique.mitigation}
                 </p>
               </div>
             </div>
 
             {/* SECTION B: RAKSHASPHERE TELEMETRY OBSERVATIONS */}
-            <div className="space-y-4">
-              <h3 className="text-xs font-extrabold uppercase text-emerald-400 tracking-wider flex items-center gap-2">
-                <Activity className="w-4 h-4" />
+            <div className="space-y-3.5">
+              <h3 className="text-xs font-bold uppercase text-emerald-400 tracking-wider flex items-center gap-2">
+                <Activity className="w-3.5 h-3.5" />
                 RakshaSphere Telemetry Observations
               </h3>
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
-                  <span className="text-slate-500 text-[10px] block">OBSERVED EVENT COUNT</span>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                <div className="p-3 rounded-lg bg-slate-950 border border-white/[0.06]">
+                  <span className="text-slate-500 text-[10px] block uppercase">OBSERVED EVENTS</span>
                   <span className="font-extrabold text-slate-100 text-sm block mt-0.5 tabular-nums">
-                    {selectedTechnique.count} RakshaSphere Events
+                    {selectedTechnique.count} Events
                   </span>
                 </div>
 
-                <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
-                  <span className="text-slate-500 text-[10px] block">OBSERVED SEVERITY</span>
+                <div className="p-3 rounded-lg bg-slate-950 border border-white/[0.06]">
+                  <span className="text-slate-500 text-[10px] block uppercase">SEVERITY</span>
                   <div className="mt-1">
                     {selectedTechnique.severity && selectedTechnique.severity !== 'NOMINAL' ? (
-                      <StatusBadge status={selectedTechnique.severity as Severity} size="sm" />
+                      <StatusBadge status={selectedTechnique.severity as Severity} size="xs" />
                     ) : (
                       <span className="text-[10px] text-slate-500 italic">No Active Alerts</span>
                     )}
                   </div>
                 </div>
 
-                <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 col-span-2 sm:col-span-1">
-                  <span className="text-slate-500 text-[10px] block">LAST OBSERVED</span>
+                <div className="p-3 rounded-lg bg-slate-950 border border-white/[0.06] col-span-2 sm:col-span-1">
+                  <span className="text-slate-500 text-[10px] block uppercase">LAST OBSERVED</span>
                   <span className="text-slate-300 text-[11px] font-bold block mt-1">
                     {selectedTechnique.lastSeen}
                   </span>
@@ -429,9 +432,9 @@ export default function MitrePage() {
               </div>
 
               {selectedTechnique.count === 0 ? (
-                <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-800/80 text-center space-y-1">
-                  <span className="text-slate-400 text-xs font-semibold block">
-                    No observed ATT&CK activity yet.
+                <div className="p-4 rounded-lg bg-slate-950/60 border border-white/[0.04] text-center space-y-1">
+                  <span className="text-slate-300 text-xs font-semibold block">
+                    No observed ATT&CK activity in active session.
                   </span>
                   <span className="text-slate-500 text-[10px] block">
                     RakshaSphere telemetry has not recorded any security alerts mapped to {selectedTechnique.id}.
@@ -440,27 +443,27 @@ export default function MitrePage() {
               ) : (
                 <div className="space-y-2">
                   <span className="text-slate-400 text-[10px] block uppercase font-bold">
-                    Matching RakshaSphere Security Alerts ({selectedTechniqueAlerts.length})
+                    Matching Security Alerts ({selectedTechniqueAlerts.length})
                   </span>
                   <div className="space-y-2 max-h-48 overflow-y-auto custom-scrollbar pr-1">
                     {selectedTechniqueAlerts.map((alert: Alert) => (
                       <div
                         key={alert.id}
-                        className="p-3 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between text-[11px]"
+                        className="p-2.5 rounded-lg bg-slate-950 border border-white/[0.06] flex items-center justify-between text-[11px]"
                       >
                         <div className="space-y-0.5">
                           <div className="flex items-center gap-2">
-                            <span className="text-cyan-400 font-bold">{alert.id}</span>
+                            <span className="text-cyan-300 font-bold">{alert.id}</span>
                             <span className="text-slate-400">({alert.attackType})</span>
                           </div>
                           <div className="text-slate-500 text-[10px]">
-                            Source: {alert.sourceIp} &rarr; Target: {alert.destinationIp}:{alert.destinationPort}
+                            {alert.sourceIp}:{alert.sourcePort} &rarr; {alert.destinationIp}:{alert.destinationPort}
                           </div>
                         </div>
                         <div className="text-right space-y-1">
-                          <StatusBadge status={alert.severity} size="sm" />
+                          <StatusBadge status={alert.severity} size="xs" />
                           <div className="text-[9px] text-slate-500">
-                            {new Date(alert.timestamp).toLocaleString()}
+                            {new Date(alert.timestamp).toLocaleTimeString()}
                           </div>
                         </div>
                       </div>
@@ -469,7 +472,6 @@ export default function MitrePage() {
                 </div>
               )}
             </div>
-
           </div>
         )}
       </Modal>

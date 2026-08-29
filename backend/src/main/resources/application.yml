@@ -42,10 +42,10 @@ spring:
 # JWT Configuration
 rakshasphere:
   jwt:
-    secret: ${JWT_SECRET}
+    secret: ${JWT_SECRET:9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9a8b}
     expiration-ms: ${JWT_EXPIRATION_MS:86400000} # 24 Hours
   ai:
-    url: ${RAKSHASPHERE_AI_URL:${AI_ENGINE_URL:https://rakshasphere-v1-1.onrender.com}}
+    url: ${RAKSHASPHERE_AI_URL:${AI_ENGINE_URL:http://localhost:5000}}
   honeypot:
     manager-url: ${HONEYPOT_MANAGER_URL:http://localhost:6000}
     manager-api-key: ${HONEYPOT_MANAGER_API_KEY:changeme}

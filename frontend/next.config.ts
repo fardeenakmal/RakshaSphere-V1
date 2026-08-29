@@ -2,15 +2,10 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
-  // output: 'standalone',
+  output: 'standalone',
   async rewrites() {
-    const apiUrl = process.env.BACKEND_API_URL || process.env.NEXT_PUBLIC_API_URL;
+    const apiUrl = process.env.BACKEND_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api/v1';
     
-    // Only configure serverless proxy rewrites if an explicit API URL target is defined
-    if (!apiUrl) {
-      return [];
-    }
-
     const targetUrl = apiUrl.replace(/\/+$/, '');
     return [
       {

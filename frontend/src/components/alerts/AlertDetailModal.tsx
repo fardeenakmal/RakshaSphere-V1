@@ -11,7 +11,9 @@ import {
   Lock,
   Download,
   Activity,
-  Layers
+  Layers,
+  Cpu,
+  Server
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import { Alert } from '@/types';
@@ -20,6 +22,7 @@ import { PermissionGuard } from '@/components/common/PermissionGuard';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { StatusBadge } from '@/components/ui/StatusBadge';
+import { Tabs } from '@/components/ui/Tabs';
 
 interface AlertDetailModalProps {
   alert: Alert | null;
@@ -65,22 +68,22 @@ export const AlertDetailModal: React.FC<AlertDetailModalProps> = ({ alert, onClo
   };
 
   const modalTitle = (
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-2.5">
       <span>INCIDENT DOSSIER: {alert.id}</span>
-      <StatusBadge status={alert.severity} size="sm" />
+      <StatusBadge status={alert.severity} size="xs" />
     </div>
   );
 
-  const modalSubtitle = `Detected: ${new Date(alert.timestamp).toLocaleString()} | Vector: ${alert.attackType}`;
+  const modalSubtitle = `Detected: ${new Date(alert.timestamp).toLocaleString()} | Attack: ${alert.attackType}`;
 
   const modalFooter = (
-    <div className="w-full flex flex-wrap items-center justify-between gap-3">
+    <div className="w-full flex flex-wrap items-center justify-between gap-3 font-mono">
       <div className="flex items-center gap-2">
         <PermissionGuard
           allowedRoles={['ROLE_ADMIN', 'ROLE_SOC_ANALYST']}
           fallback={
             <span className="text-amber-400 text-[11px] flex items-center gap-1 font-mono">
-              <Lock className="w-3.5 h-3.5" /> Read-only role
+              <Lock className="w-3.5 h-3.5" /> Read-only mode
             </span>
           }
         >
@@ -125,7 +128,7 @@ export const AlertDetailModal: React.FC<AlertDetailModalProps> = ({ alert, onClo
             <Button
               size="sm"
               variant="outline"
-              leftIcon={<RotateCcw className="w-3.5 h-3.5 text-red-400" />}
+              leftIcon={<RotateCcw className="w-3.5 h-3.5 text-rose-400" />}
               onClick={() => revertAction(alert.id)}
             >
               Revert Rule
@@ -152,112 +155,111 @@ export const AlertDetailModal: React.FC<AlertDetailModalProps> = ({ alert, onClo
       title={modalTitle}
       subtitle={modalSubtitle}
       size="lg"
-      icon={<ShieldAlert className="w-6 h-6 text-red-400" />}
+      icon={<ShieldAlert className="w-5 h-5 text-rose-400" />}
       footer={modalFooter}
     >
-      <div className="space-y-6 font-mono text-xs">
-        {/* Navigation Tabs inside Modal */}
-        <div className="flex border-b border-slate-800 space-x-4">
-          <button
-            onClick={() => setActiveTab('OVERVIEW')}
-            className={`py-2 px-3 font-bold border-b-2 transition flex items-center gap-1.5 ${
-              activeTab === 'OVERVIEW'
-                ? 'border-emerald-400 text-emerald-400'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            <Activity className="w-3.5 h-3.5" /> Overview & Risk
-          </button>
-          <button
-            onClick={() => setActiveTab('EVIDENCE')}
-            className={`py-2 px-3 font-bold border-b-2 transition flex items-center gap-1.5 ${
-              activeTab === 'EVIDENCE'
-                ? 'border-emerald-400 text-emerald-400'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            <Layers className="w-3.5 h-3.5" /> AI Evidence & Features
-          </button>
-          <button
-            onClick={() => setActiveTab('INTEL')}
-            className={`py-2 px-3 font-bold border-b-2 transition flex items-center gap-1.5 ${
-              activeTab === 'INTEL'
-                ? 'border-emerald-400 text-emerald-400'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
-            }`}
-          >
-            <Globe className="w-3.5 h-3.5" /> Threat Intelligence
-          </button>
-        </div>
+      <div className="space-y-5 font-mono text-xs">
+        {/* Modal Navigation Tabs */}
+        <Tabs
+          tabs={[
+            { id: 'OVERVIEW', label: 'Overview & Risk', icon: <Activity className="w-3.5 h-3.5" /> },
+            { id: 'EVIDENCE', label: 'AI Evidence & Features', icon: <Layers className="w-3.5 h-3.5" /> },
+            { id: 'INTEL', label: 'Threat Intelligence', icon: <Globe className="w-3.5 h-3.5" /> },
+          ]}
+          activeTab={activeTab}
+          onChange={(tabId) => setActiveTab(tabId as any)}
+          variant="pills"
+        />
 
         {/* Tab 1: Overview */}
         {activeTab === 'OVERVIEW' && (
-          <div className="space-y-6">
-            {/* Top Metric Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 flex flex-col justify-between">
-                <span className="text-slate-400 font-semibold text-[10px]">DYNAMIC RISK SCORE</span>
-                <div className="flex items-baseline gap-2 mt-2">
-                  <span className="text-3xl font-extrabold text-red-400 tabular-nums">{alert.riskScore}</span>
-                  <span className="text-slate-400 text-[10px]">/ 100</span>
+          <div className="space-y-4">
+            {/* Metric Summary Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div className="p-3.5 rounded-lg bg-slate-950/80 border border-white/[0.06] flex flex-col justify-between">
+                <span className="text-slate-400 font-semibold text-[10px] uppercase tracking-wider">
+                  DYNAMIC RISK SCORE
+                </span>
+                <div className="flex items-baseline gap-2 mt-1.5">
+                  <span className="text-2xl md:text-3xl font-extrabold text-rose-400 tabular-nums">
+                    {alert.riskScore}
+                  </span>
+                  <span className="text-slate-500 text-[10px]">/ 100</span>
                 </div>
-                <div className="w-full bg-slate-800 h-1.5 rounded-full mt-2 overflow-hidden">
-                  <div className="bg-gradient-to-r from-amber-500 to-red-500 h-full" style={{ width: `${alert.riskScore}%` }} />
+                <div className="w-full bg-slate-900 h-1.5 rounded-full mt-2 overflow-hidden border border-white/[0.04]">
+                  <div
+                    className="bg-gradient-to-r from-amber-500 to-rose-500 h-full"
+                    style={{ width: `${alert.riskScore}%` }}
+                  />
                 </div>
               </div>
 
-              <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 flex flex-col justify-between">
-                <span className="text-slate-400 font-semibold text-[10px]">AI CONFIDENCE SCORE</span>
-                <div className="flex items-baseline gap-2 mt-2">
-                  <span className="text-2xl font-bold text-cyan-400 tabular-nums">{(alert.confidence * 100).toFixed(0)}%</span>
+              <div className="p-3.5 rounded-lg bg-slate-950/80 border border-white/[0.06] flex flex-col justify-between">
+                <span className="text-slate-400 font-semibold text-[10px] uppercase tracking-wider">
+                  AI CONFIDENCE
+                </span>
+                <div className="flex items-baseline gap-2 mt-1.5">
+                  <span className="text-2xl font-bold text-cyan-300 tabular-nums">
+                    {(alert.confidence * 100).toFixed(0)}%
+                  </span>
                   <span className="text-slate-400 text-[10px]">Random Forest</span>
                 </div>
-                <span className="text-[10px] text-slate-400 mt-2">XGBoost & Autoencoder Ensembled</span>
+                <span className="text-[10px] text-slate-500 mt-2">
+                  XGBoost & Autoencoder Ensembled
+                </span>
               </div>
 
-              <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 flex flex-col justify-between">
-                <span className="text-slate-400 font-semibold text-[10px]">REMEDIATION STATE</span>
-                <div className="mt-2">
-                  <StatusBadge status={alert.status} size="md" />
+              <div className="p-3.5 rounded-lg bg-slate-950/80 border border-white/[0.06] flex flex-col justify-between">
+                <span className="text-slate-400 font-semibold text-[10px] uppercase tracking-wider">
+                  REMEDIATION STATE
+                </span>
+                <div className="mt-1.5">
+                  <StatusBadge status={alert.status} size="sm" />
                 </div>
-                <span className="text-[10px] text-slate-400 mt-2 truncate block">{alert.remediationAction}</span>
+                <span className="text-[10px] text-slate-400 mt-2 truncate block">
+                  {alert.remediationAction}
+                </span>
               </div>
             </div>
 
-            {/* Network Telemetry & MITRE Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
-                <h4 className="font-bold text-slate-200 text-xs border-b border-slate-800 pb-1 mb-2">
+            {/* Ingress Telemetry & MITRE Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="p-4 rounded-lg bg-slate-950/80 border border-white/[0.06] space-y-2">
+                <h4 className="font-bold text-slate-200 text-xs border-b border-white/[0.06] pb-1.5 mb-2 uppercase">
                   NETWORK INGRESS TELEMETRY
                 </h4>
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Attacker IP:</span>
-                  <span className="text-emerald-400 font-bold">{alert.sourceIp}:{alert.sourcePort}</span>
+                  <span className="text-slate-400 text-[11px]">Attacker Source:</span>
+                  <span className="text-emerald-400 font-bold tabular-nums">
+                    {alert.sourceIp}:{alert.sourcePort}
+                  </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Target IP:</span>
-                  <span className="text-slate-200 font-bold">{alert.destinationIp}:{alert.destinationPort}</span>
+                  <span className="text-slate-400 text-[11px]">Target Destination:</span>
+                  <span className="text-slate-200 font-bold tabular-nums">
+                    {alert.destinationIp}:{alert.destinationPort}
+                  </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Attack Vector:</span>
-                  <span className="text-slate-200 font-bold">{alert.attackType}</span>
+                  <span className="text-slate-400 text-[11px]">Attack Vector:</span>
+                  <span className="text-slate-100 font-bold">{alert.attackType}</span>
                 </div>
               </div>
 
-              <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
-                <h4 className="font-bold text-slate-200 text-xs border-b border-slate-800 pb-1 mb-2">
-                  MITRE ATT&CK MATRIX MAPPING
+              <div className="p-4 rounded-lg bg-slate-950/80 border border-white/[0.06] space-y-2">
+                <h4 className="font-bold text-slate-200 text-xs border-b border-white/[0.06] pb-1.5 mb-2 uppercase">
+                  MITRE ATT&CK CORRELATION
                 </h4>
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Tactic Group:</span>
-                  <span className="text-cyan-400 font-bold">{alert.mitreTactic}</span>
+                  <span className="text-slate-400 text-[11px]">Tactic Group:</span>
+                  <span className="text-cyan-300 font-bold">{alert.mitreTactic}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Technique:</span>
+                  <span className="text-slate-400 text-[11px]">Technique:</span>
                   <span className="text-slate-200 font-bold">{alert.mitreTechnique}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-400">STIX ID:</span>
+                  <span className="text-slate-400 text-[11px]">STIX 2.1 ID:</span>
                   <span className="text-emerald-400 font-bold">{alert.mitreId}</span>
                 </div>
               </div>
@@ -268,29 +270,41 @@ export const AlertDetailModal: React.FC<AlertDetailModalProps> = ({ alert, onClo
         {/* Tab 2: AI Features & Evidence */}
         {activeTab === 'EVIDENCE' && (
           <div className="space-y-4">
-            <h4 className="font-bold text-slate-200 text-xs">CICFLOWMETER 84-FEATURE INFERENCE VECTOR</h4>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
-                <span className="text-[10px] text-slate-400 block">FLOW DURATION</span>
-                <span className="font-bold text-slate-200">{alert.flowFeatures?.flowDurationMs || 0} ms</span>
+            <h4 className="font-bold text-slate-200 text-xs uppercase tracking-wider">
+              CICFLOWMETER 84-FEATURE INFERENCE VECTOR
+            </h4>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+              <div className="p-3 rounded-lg bg-slate-950/80 border border-white/[0.06]">
+                <span className="text-[10px] text-slate-400 block uppercase">Flow Duration</span>
+                <span className="font-bold text-slate-200 tabular-nums">
+                  {alert.flowFeatures?.flowDurationMs || 0} ms
+                </span>
               </div>
-              <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
-                <span className="text-[10px] text-slate-400 block">TOTAL FWD PACKETS</span>
-                <span className="font-bold text-slate-200">{alert.flowFeatures?.totalFwdPackets || 0}</span>
+              <div className="p-3 rounded-lg bg-slate-950/80 border border-white/[0.06]">
+                <span className="text-[10px] text-slate-400 block uppercase">Total Fwd Packets</span>
+                <span className="font-bold text-slate-200 tabular-nums">
+                  {alert.flowFeatures?.totalFwdPackets || 0}
+                </span>
               </div>
-              <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
-                <span className="text-[10px] text-slate-400 block">MEAN PACKET SIZE</span>
-                <span className="font-bold text-slate-200">{alert.flowFeatures?.packetLengthMean || 0} B</span>
+              <div className="p-3 rounded-lg bg-slate-950/80 border border-white/[0.06]">
+                <span className="text-[10px] text-slate-400 block uppercase">Mean Packet Size</span>
+                <span className="font-bold text-slate-200 tabular-nums">
+                  {alert.flowFeatures?.packetLengthMean || 0} B
+                </span>
               </div>
-              <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
-                <span className="text-[10px] text-slate-400 block">ANOMALY SCORE</span>
-                <span className="font-bold text-red-400">{alert.flowFeatures?.autoencoderAnomalyScore || 0}</span>
+              <div className="p-3 rounded-lg bg-slate-950/80 border border-white/[0.06]">
+                <span className="text-[10px] text-slate-400 block uppercase">Anomaly Score</span>
+                <span className="font-bold text-rose-400 tabular-nums">
+                  {alert.flowFeatures?.autoencoderAnomalyScore || 0}
+                </span>
               </div>
             </div>
 
-            <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
-              <span className="text-slate-400 text-[10px] block">AUTONOMOUS MITIGATION RECOMMENDATION</span>
-              <p className="text-emerald-400 leading-relaxed bg-emerald-500/10 p-3 rounded-lg border border-emerald-500/30">
+            <div className="p-4 rounded-lg bg-slate-950/80 border border-white/[0.06] space-y-1.5">
+              <span className="text-slate-400 text-[10px] uppercase font-bold block">
+                AUTONOMOUS MITIGATION RECOMMENDATION
+              </span>
+              <p className="text-emerald-300 leading-relaxed bg-emerald-500/10 p-3 rounded-lg border border-emerald-500/20 text-[11px]">
                 Execute closed-loop eBPF XDP NIC drop rule for source IP <strong>{alert.sourceIp}</strong> or divert session to isolated Deception Honeypot trap container.
               </p>
             </div>
@@ -300,22 +314,28 @@ export const AlertDetailModal: React.FC<AlertDetailModalProps> = ({ alert, onClo
         {/* Tab 3: Threat Intelligence */}
         {activeTab === 'INTEL' && alert.threatIntel && (
           <div className="space-y-4">
-            <h4 className="font-bold text-slate-200 text-xs">EXTERNAL REPUTATION ENRICHMENT</h4>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
-                <span className="text-[10px] text-slate-400 block">VIRUSTOTAL REPUTATION</span>
-                <span className="font-bold text-red-400">{alert.threatIntel.virusTotalScore}</span>
+            <h4 className="font-bold text-slate-200 text-xs uppercase tracking-wider">
+              EXTERNAL REPUTATION & GEO ENRICHMENT
+            </h4>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+              <div className="p-3 rounded-lg bg-slate-950/80 border border-white/[0.06]">
+                <span className="text-[10px] text-slate-400 block uppercase">VirusTotal v3</span>
+                <span className="font-bold text-rose-400 tabular-nums">
+                  {alert.threatIntel.virusTotalScore}
+                </span>
               </div>
-              <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
-                <span className="text-[10px] text-slate-400 block">ABUSEIPDB CONFIDENCE</span>
-                <span className="font-bold text-amber-400">{alert.threatIntel.abuseIpDbConfidence}%</span>
+              <div className="p-3 rounded-lg bg-slate-950/80 border border-white/[0.06]">
+                <span className="text-[10px] text-slate-400 block uppercase">AbuseIPDB Confidence</span>
+                <span className="font-bold text-amber-400 tabular-nums">
+                  {alert.threatIntel.abuseIpDbConfidence}%
+                </span>
               </div>
-              <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
-                <span className="text-[10px] text-slate-400 block">GEO ORIGIN</span>
+              <div className="p-3 rounded-lg bg-slate-950/80 border border-white/[0.06]">
+                <span className="text-[10px] text-slate-400 block uppercase">Country Origin</span>
                 <span className="font-bold text-slate-200">{alert.threatIntel.country}</span>
               </div>
-              <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
-                <span className="text-[10px] text-slate-400 block">NETWORK ISP</span>
+              <div className="p-3 rounded-lg bg-slate-950/80 border border-white/[0.06]">
+                <span className="text-[10px] text-slate-400 block uppercase">Network ISP</span>
                 <span className="font-bold text-slate-200 truncate block">{alert.threatIntel.isp}</span>
               </div>
             </div>
@@ -325,4 +345,3 @@ export const AlertDetailModal: React.FC<AlertDetailModalProps> = ({ alert, onClo
     </Modal>
   );
 };
-

@@ -164,6 +164,23 @@ services:
           cpus: '0.25'
           memory: 256M
 
+  ebpf-collector:
+    build:
+      context: ../ebpf-collector
+      dockerfile: Dockerfile
+    container_name: raksha-ebpf-collector
+    network_mode: host
+    privileged: true
+    restart: unless-stopped
+    volumes:
+      - /sys/fs/bpf:/sys/fs/bpf:rshared
+      - /sys/kernel/btf/vmlinux:/sys/kernel/btf/vmlinux:ro
+    healthcheck:
+      test: ["CMD-SHELL", "python3 -c \"import urllib.request; urllib.request.urlopen('http://localhost:7000/api/ebpf/status')\""]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
 networks:
   honeypot_net:
     driver: bridge

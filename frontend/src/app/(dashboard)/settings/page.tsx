@@ -1,11 +1,13 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Shield, Key, Sliders, Users, Save, CheckCircle2, Lock, Eye, EyeOff, UserCheck, Cpu, Server, HardDrive, Terminal } from 'lucide-react';
+import { Shield, Key, Sliders, Users, Save, CheckCircle2, Lock, Eye, EyeOff, UserCheck, Cpu, Server, HardDrive } from 'lucide-react';
 import { PermissionGuard } from '@/components/common/PermissionGuard';
 import { apiService } from '@/services/api';
 import { Button } from '@/components/ui/Button';
 import { StatusBadge } from '@/components/ui/StatusBadge';
+import { Tabs } from '@/components/ui/Tabs';
+import { Input } from '@/components/ui/Input';
 import { useAuthStore } from '@/store/useAuthStore';
 
 export default function SettingsPage() {
@@ -91,28 +93,42 @@ export default function SettingsPage() {
     }
   };
 
+  const tabsConfig = [
+    { id: 'PROFILE', label: 'Profile & Role', icon: <UserCheck className="w-3.5 h-3.5" /> },
+    { id: 'RULES', label: 'Self-Healing Rules', icon: <Sliders className="w-3.5 h-3.5" /> },
+    { id: 'USERS', label: 'User RBAC', icon: <Users className="w-3.5 h-3.5" />, badge: <span className="px-1.5 py-0.2 text-[9px] rounded bg-slate-900 border border-white/10">{users.length}</span> },
+    { id: 'KEYS', label: 'Threat Intel API Keys', icon: <Key className="w-3.5 h-3.5" /> },
+    { id: 'AUDIT', label: 'Cryptographic Audit', icon: <Shield className="w-3.5 h-3.5" /> },
+    { id: 'SYSINFO', label: 'Host System Info', icon: <Cpu className="w-3.5 h-3.5" /> },
+  ];
+
   return (
-    <div className="space-y-6 pb-12">
+    <div className="space-y-6 pb-12 font-mono">
       {/* Title Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800/80 pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/[0.06] pb-4">
         <div>
-          <h1 className="text-xl md:text-2xl font-extrabold text-slate-100 flex items-center gap-2 tracking-tight">
-            SYSTEM SETTINGS & RULES CONFIGURATION
-          </h1>
-          <p className="text-xs font-mono text-slate-400 mt-1">
-            RBAC Controls, Autonomous Containment Thresholds & Threat Intelligence Credentials
+          <div className="flex items-center gap-2.5">
+            <h1 className="text-xl md:text-2xl font-extrabold text-slate-100 tracking-tight">
+              SETTINGS & GOVERNANCE CONSOLE
+            </h1>
+            <span className="px-2 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 text-[10px] font-bold">
+              RBAC PROTECTED
+            </span>
+          </div>
+          <p className="text-xs text-slate-400 mt-1">
+            Role Permissions, Autonomous Containment Thresholds & External Credentials
           </p>
         </div>
 
         {savedSuccess && (
-          <div className="flex items-center gap-2 text-emerald-400 font-mono text-xs bg-emerald-500/10 px-3 py-1.5 rounded-xl border border-emerald-500/30 animate-in fade-in">
+          <div className="flex items-center gap-2 text-emerald-400 text-xs bg-emerald-500/10 px-3 py-1.5 rounded-lg border border-emerald-500/30">
             <CheckCircle2 className="w-4 h-4" />
             <span>Settings Saved & Applied</span>
           </div>
         )}
 
         {errorMessage && (
-          <div className="flex items-center gap-2 text-red-400 font-mono text-xs bg-red-500/10 px-3 py-1.5 rounded-xl border border-red-500/30 animate-in fade-in">
+          <div className="flex items-center gap-2 text-rose-300 text-xs bg-rose-500/10 px-3 py-1.5 rounded-lg border border-rose-500/30">
             <Lock className="w-4 h-4" />
             <span>{errorMessage}</span>
           </div>
@@ -120,113 +136,53 @@ export default function SettingsPage() {
       </div>
 
       {/* Navigation Tabs */}
-      <div className="flex border-b border-slate-800 space-x-2 font-mono text-xs overflow-x-auto">
-        <button
-          onClick={() => setActiveTab('PROFILE')}
-          className={`py-2.5 px-4 font-bold border-b-2 transition flex items-center gap-2 whitespace-nowrap ${
-            activeTab === 'PROFILE'
-              ? 'border-emerald-400 text-emerald-400'
-              : 'border-transparent text-slate-400 hover:text-slate-200'
-          }`}
-        >
-          <UserCheck className="w-4 h-4" /> Profile & Role
-        </button>
-
-        <button
-          onClick={() => setActiveTab('RULES')}
-          className={`py-2.5 px-4 font-bold border-b-2 transition flex items-center gap-2 whitespace-nowrap ${
-            activeTab === 'RULES'
-              ? 'border-emerald-400 text-emerald-400'
-              : 'border-transparent text-slate-400 hover:text-slate-200'
-          }`}
-        >
-          <Sliders className="w-4 h-4" /> Self-Healing Rules
-        </button>
-
-        <button
-          onClick={() => setActiveTab('USERS')}
-          className={`py-2.5 px-4 font-bold border-b-2 transition flex items-center gap-2 whitespace-nowrap ${
-            activeTab === 'USERS'
-              ? 'border-emerald-400 text-emerald-400'
-              : 'border-transparent text-slate-400 hover:text-slate-200'
-          }`}
-        >
-          <Users className="w-4 h-4" /> User RBAC Management
-        </button>
-
-        <button
-          onClick={() => setActiveTab('KEYS')}
-          className={`py-2.5 px-4 font-bold border-b-2 transition flex items-center gap-2 whitespace-nowrap ${
-            activeTab === 'KEYS'
-              ? 'border-emerald-400 text-emerald-400'
-              : 'border-transparent text-slate-400 hover:text-slate-200'
-          }`}
-        >
-          <Key className="w-4 h-4" /> Threat Intel API Keys
-        </button>
-
-        <button
-          onClick={() => setActiveTab('AUDIT')}
-          className={`py-2.5 px-4 font-bold border-b-2 transition flex items-center gap-2 whitespace-nowrap ${
-            activeTab === 'AUDIT'
-              ? 'border-emerald-400 text-emerald-400'
-              : 'border-transparent text-slate-400 hover:text-slate-200'
-          }`}
-        >
-          <Shield className="w-4 h-4" /> Cryptographic Audit Logs
-        </button>
-
-        <button
-          onClick={() => setActiveTab('SYSINFO')}
-          className={`py-2.5 px-4 font-bold border-b-2 transition flex items-center gap-2 whitespace-nowrap ${
-            activeTab === 'SYSINFO'
-              ? 'border-emerald-400 text-emerald-400'
-              : 'border-transparent text-slate-400 hover:text-slate-200'
-          }`}
-        >
-          <Cpu className="w-4 h-4" /> Real System & Runtime Info
-        </button>
-      </div>
+      <Tabs
+        tabs={tabsConfig}
+        activeTab={activeTab}
+        onChange={(tabId) => setActiveTab(tabId as any)}
+      />
 
       {/* Tab 1: Profile & Role */}
       {activeTab === 'PROFILE' && (
-        <div className="soc-card p-6 space-y-6 font-mono text-xs">
-          <h3 className="font-bold text-sm text-slate-100 border-b border-slate-800 pb-2">
-            CURRENT SESSION & ROLE IDENTIFIER
+        <div className="soc-card p-5 md:p-6 space-y-6 text-xs">
+          <h3 className="font-bold text-sm text-slate-100 border-b border-white/[0.06] pb-2 uppercase tracking-wider">
+            AUTHENTICATED SESSION IDENTIFIER
           </h3>
 
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 p-4 rounded-xl bg-slate-950 border border-slate-800">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 p-4 rounded-xl bg-slate-950/80 border border-white/[0.06]">
             <img
               src={user?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'}
-              alt={user?.name || 'User Avatar'}
-              className="w-16 h-16 rounded-full border-2 border-emerald-500/40 object-cover shadow-lg"
+              alt={user?.name || 'User'}
+              className="w-14 h-14 rounded-full border border-emerald-500/40 object-cover shadow-sm"
             />
             <div className="space-y-1">
-              <h4 className="font-extrabold text-base text-slate-100">{user?.name || 'Security Analyst'}</h4>
-              <p className="text-slate-400 font-mono text-xs">@{user?.username || 'analyst'}</p>
-              <div className="pt-2 flex items-center gap-2">
-                <span className="text-slate-400 text-[10px]">ACTIVE ROLE:</span>
-                <StatusBadge status="HEALTHY" size="sm" labelOverride={user?.role || 'ROLE_SOC_ANALYST'} />
+              <h4 className="font-extrabold text-sm md:text-base text-slate-100 font-sans">{user?.name || 'Security Analyst'}</h4>
+              <p className="text-slate-400 text-xs font-mono">@{user?.username || 'analyst'}</p>
+              <div className="pt-1.5 flex items-center gap-2">
+                <span className="text-slate-400 text-[10px] uppercase">Active Role:</span>
+                <StatusBadge status="HEALTHY" size="xs" labelOverride={user?.role || 'ROLE_SOC_ANALYST'} />
               </div>
             </div>
           </div>
 
           <div className="space-y-3">
-            <span className="text-slate-400 text-[10px] uppercase font-bold block">Role Capabilities & Permissions Matrix</span>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
+            <span className="text-slate-400 text-[10px] uppercase font-bold block tracking-wider">
+              Role Capabilities & Permissions Matrix
+            </span>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+              <div className="p-4 rounded-lg bg-slate-950/80 border border-white/[0.06] space-y-1">
                 <span className="text-emerald-400 font-bold block text-xs">ROLE_ADMIN</span>
-                <p className="text-slate-400 text-[10px]">Full read/write access. Can modify self-healing rules, API keys, manage users, and inject eBPF rules.</p>
+                <p className="text-slate-400 text-[11px] leading-relaxed">Full read/write access. Can modify self-healing rules, API keys, approve user registrations, and inject eBPF kernel rules.</p>
               </div>
 
-              <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
-                <span className="text-cyan-400 font-bold block text-xs">ROLE_SOC_ANALYST</span>
-                <p className="text-slate-400 text-[10px]">Threat triage console access. Can contain threats, divert sessions to honeypots, and mark alerts resolved.</p>
+              <div className="p-4 rounded-lg bg-slate-950/80 border border-white/[0.06] space-y-1">
+                <span className="text-cyan-300 font-bold block text-xs">ROLE_SOC_ANALYST</span>
+                <p className="text-slate-400 text-[11px] leading-relaxed">Threat triage console access. Can contain threats, divert sessions to honeypots, and mark alerts resolved.</p>
               </div>
 
-              <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
+              <div className="p-4 rounded-lg bg-slate-950/80 border border-white/[0.06] space-y-1">
                 <span className="text-slate-400 font-bold block text-xs">ROLE_USER</span>
-                <p className="text-slate-400 text-[10px]">Read-only telemetry observer. Can view dashboards and stream alerts without execution rights.</p>
+                <p className="text-slate-400 text-[11px] leading-relaxed">Read-only telemetry observer. Can view dashboards and stream alerts without execution rights.</p>
               </div>
             </div>
           </div>
@@ -235,10 +191,10 @@ export default function SettingsPage() {
 
       {/* Tab 2: Self-Healing Rules */}
       {activeTab === 'RULES' && (
-        <form onSubmit={handleSaveRules} className="soc-card p-6 space-y-6 font-mono text-xs">
+        <form onSubmit={handleSaveRules} className="soc-card p-5 md:p-6 space-y-6 text-xs">
           <div className="space-y-4">
-            <h3 className="font-bold text-sm text-slate-100 border-b border-slate-800 pb-2">
-              AUTONOMOUS REMEDIATION THRESHOLDS
+            <h3 className="font-bold text-sm text-slate-100 border-b border-white/[0.06] pb-2 uppercase tracking-wider">
+              AUTONOMOUS CONTAINMENT THRESHOLDS
             </h3>
 
             {/* Risk Threshold Slider */}
@@ -255,48 +211,48 @@ export default function SettingsPage() {
                 onChange={(e) => setRiskThreshold(Number(e.target.value))}
                 className="w-full h-2 bg-slate-950 rounded-lg appearance-none cursor-pointer accent-emerald-400"
               />
-              <p className="text-[10px] text-slate-400">
-                Threat incidents with evaluated Risk Score ≥ {riskThreshold} will immediately trigger closed-loop containment.
+              <p className="text-[11px] text-slate-400">
+                Threat incidents with evaluated Risk Score &ge; {riskThreshold} will immediately trigger closed-loop containment.
               </p>
             </div>
 
             {/* eBPF XDP Toggle */}
-            <div className="flex items-center justify-between p-4 rounded-xl bg-slate-950 border border-slate-800 max-w-xl">
+            <div className="flex items-center justify-between p-4 rounded-lg bg-slate-950/80 border border-white/[0.06] max-w-xl">
               <div>
-                <span className="font-bold text-slate-200 block">eBPF XDP Hardware NIC Driver Drop</span>
-                <span className="text-[10px] text-slate-400">High-performance zero-copy packet drop at NIC layer</span>
+                <span className="font-bold text-slate-200 block">eBPF XDP Zero-Copy NIC Driver Drop</span>
+                <span className="text-[11px] text-slate-400">High-performance zero-copy packet drop at NIC layer</span>
               </div>
               <button
                 type="button"
                 onClick={() => setEbpfMode(!ebpfMode)}
-                className={`w-12 h-6 rounded-full p-1 transition cursor-pointer ${
+                className={`w-11 h-6 rounded-full p-0.5 transition cursor-pointer ${
                   ebpfMode ? 'bg-emerald-500' : 'bg-slate-800'
                 }`}
               >
                 <div
-                  className={`w-4 h-4 rounded-full bg-slate-950 transition transform ${
-                    ebpfMode ? 'translate-x-6' : 'translate-x-0'
+                  className={`w-5 h-5 rounded-full bg-slate-950 transition transform ${
+                    ebpfMode ? 'translate-x-5' : 'translate-x-0'
                   }`}
                 />
               </button>
             </div>
 
             {/* Auto Honeypot Divert Toggle */}
-            <div className="flex items-center justify-between p-4 rounded-xl bg-slate-950 border border-slate-800 max-w-xl">
+            <div className="flex items-center justify-between p-4 rounded-lg bg-slate-950/80 border border-white/[0.06] max-w-xl">
               <div>
                 <span className="font-bold text-slate-200 block">Auto-Divert Probing Scans to Honeypot</span>
-                <span className="text-[10px] text-slate-400 font-mono">Reroute port probes to ephemeral deception containers</span>
+                <span className="text-[11px] text-slate-400">Reroute port probes to ephemeral deception containers</span>
               </div>
               <button
                 type="button"
                 onClick={() => setAutoDivertHoneypot(!autoDivertHoneypot)}
-                className={`w-12 h-6 rounded-full p-1 transition cursor-pointer ${
+                className={`w-11 h-6 rounded-full p-0.5 transition cursor-pointer ${
                   autoDivertHoneypot ? 'bg-amber-500' : 'bg-slate-800'
                 }`}
               >
                 <div
-                  className={`w-4 h-4 rounded-full bg-slate-950 transition transform ${
-                    autoDivertHoneypot ? 'translate-x-6' : 'translate-x-0'
+                  className={`w-5 h-5 rounded-full bg-slate-950 transition transform ${
+                    autoDivertHoneypot ? 'translate-x-5' : 'translate-x-0'
                   }`}
                 />
               </button>
@@ -307,12 +263,12 @@ export default function SettingsPage() {
             requiredRole="ROLE_ADMIN"
             fallback={
               <div className="text-amber-400 text-xs flex items-center gap-2 pt-2">
-                <Lock className="w-4 h-4" /> Admin rights required to save rules (Switch role in Navbar to ROLE_ADMIN)
+                <Lock className="w-4 h-4" /> Admin rights required to modify rules.
               </div>
             }
           >
-            <Button type="submit" variant="primary" leftIcon={<Save className="w-4 h-4" />}>
-              Save Configuration
+            <Button type="submit" size="sm" variant="primary" leftIcon={<Save className="w-4 h-4" />}>
+              Save Rules Configuration
             </Button>
           </PermissionGuard>
         </form>
@@ -320,26 +276,26 @@ export default function SettingsPage() {
 
       {/* Tab 3: Users RBAC */}
       {activeTab === 'USERS' && (
-        <div className="soc-card p-6 space-y-4 font-mono text-xs">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-            <h3 className="font-bold text-sm text-slate-100">
-              ENTERPRISE USER ACCOUNTS & ACCESS APPROVALS
+        <div className="soc-card p-5 md:p-6 space-y-4 text-xs">
+          <div className="flex items-center justify-between border-b border-white/[0.06] pb-2">
+            <h3 className="font-bold text-sm text-slate-100 uppercase tracking-wider">
+              ENTERPRISE USER ACCOUNTS & RBAC PROVISIONS
             </h3>
-            <span className="text-[10px] text-slate-400">Total Registered Users: {users.length}</span>
+            <span className="text-[11px] text-slate-400">Total Registered Users: {users.length}</span>
           </div>
 
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto custom-scrollbar">
             <table className="w-full text-left">
-              <thead className="bg-slate-950 text-slate-400 text-[10px] uppercase">
+              <thead className="bg-slate-950/80 text-slate-400 text-[10px] uppercase border-b border-white/[0.06]">
                 <tr>
-                  <th className="p-3">User</th>
-                  <th className="p-3">Email</th>
-                  <th className="p-3">Role</th>
-                  <th className="p-3">Status</th>
-                  <th className="p-3 text-right">Actions</th>
+                  <th className="py-2.5 px-3.5">User Identity</th>
+                  <th className="py-2.5 px-3.5">Email</th>
+                  <th className="py-2.5 px-3.5">Role</th>
+                  <th className="py-2.5 px-3.5">Status</th>
+                  <th className="py-2.5 px-3.5 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800">
+              <tbody className="divide-y divide-white/[0.04]">
                 {users.length > 0 ? (
                   users.map((u) => {
                     const statusStr = u.status || 'ACTIVE';
@@ -347,16 +303,20 @@ export default function SettingsPage() {
                     const isDisabled = statusStr === 'DISABLED';
 
                     return (
-                      <tr key={u.id || u.username}>
-                        <td className="p-3 flex items-center gap-3">
-                          <img src={u.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'} alt={u.name} className="w-8 h-8 rounded-full border border-slate-700 object-cover" />
+                      <tr key={u.id || u.username} className="hover:bg-slate-900/60">
+                        <td className="py-2.5 px-3.5 flex items-center gap-2.5">
+                          <img
+                            src={u.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'}
+                            alt={u.name}
+                            className="w-7 h-7 rounded-full border border-white/10 object-cover shrink-0"
+                          />
                           <div>
-                            <div className="font-bold text-slate-200">{u.name || u.username}</div>
+                            <div className="font-bold text-slate-200 font-sans text-xs">{u.name || u.username}</div>
                             <div className="text-[10px] text-slate-400">@{u.username}</div>
                           </div>
                         </td>
-                        <td className="p-3 text-slate-300">{u.email}</td>
-                        <td className="p-3">
+                        <td className="py-2.5 px-3.5 text-slate-300 text-xs">{u.email}</td>
+                        <td className="py-2.5 px-3.5">
                           <select
                             value={u.role}
                             onChange={async (e) => {
@@ -368,21 +328,21 @@ export default function SettingsPage() {
                                 setErrorMessage(err.message || 'Failed to update user role');
                               }
                             }}
-                            className="bg-slate-950 border border-slate-800 rounded px-2 py-1 text-[11px] text-emerald-400 font-bold focus:outline-none cursor-pointer"
+                            className="bg-slate-950 border border-white/10 rounded px-2 py-1 text-[11px] text-emerald-400 font-bold focus:outline-none cursor-pointer"
                           >
                             <option value="ROLE_ADMIN">ROLE_ADMIN</option>
                             <option value="ROLE_SOC_ANALYST">ROLE_SOC_ANALYST</option>
                             <option value="ROLE_USER">ROLE_USER</option>
                           </select>
                         </td>
-                        <td className="p-3">
-                          <StatusBadge status={statusStr === 'ACTIVE' ? 'HEALTHY' : statusStr} size="sm" labelOverride={statusStr} />
+                        <td className="py-2.5 px-3.5">
+                          <StatusBadge status={statusStr === 'ACTIVE' ? 'HEALTHY' : statusStr} size="xs" labelOverride={statusStr} />
                         </td>
-                        <td className="p-3 text-right">
-                          <div className="flex items-center justify-end gap-2">
+                        <td className="py-2.5 px-3.5 text-right">
+                          <div className="flex items-center justify-end gap-1.5">
                             {isPending && (
                               <Button
-                                size="sm"
+                                size="xs"
                                 variant="success"
                                 onClick={async () => {
                                   try {
@@ -398,7 +358,7 @@ export default function SettingsPage() {
                             )}
                             {!isDisabled ? (
                               <Button
-                                size="sm"
+                                size="xs"
                                 variant="danger"
                                 onClick={async () => {
                                   try {
@@ -413,7 +373,7 @@ export default function SettingsPage() {
                               </Button>
                             ) : (
                               <Button
-                                size="sm"
+                                size="xs"
                                 variant="outline"
                                 onClick={async () => {
                                   try {
@@ -424,7 +384,7 @@ export default function SettingsPage() {
                                   }
                                 }}
                               >
-                                Re-Activate
+                                Activate
                               </Button>
                             )}
                           </div>
@@ -434,8 +394,8 @@ export default function SettingsPage() {
                   })
                 ) : (
                   <tr>
-                    <td colSpan={5} className="p-8 text-center text-slate-400 text-xs font-mono">
-                      No registered user accounts found. Login with Administrator privileges to view user directory.
+                    <td colSpan={5} className="py-8 text-center text-slate-400 text-xs">
+                      No user accounts found. Login with Administrator privileges to view user directory.
                     </td>
                   </tr>
                 )}
@@ -447,44 +407,50 @@ export default function SettingsPage() {
 
       {/* Tab 4: API Keys */}
       {activeTab === 'KEYS' && (
-        <form onSubmit={handleSaveKeys} className="soc-card p-6 space-y-6 font-mono text-xs">
-          <h3 className="font-bold text-sm text-slate-100 border-b border-slate-800 pb-2">
+        <form onSubmit={handleSaveKeys} className="soc-card p-5 md:p-6 space-y-6 text-xs">
+          <h3 className="font-bold text-sm text-slate-100 border-b border-white/[0.06] pb-2 uppercase tracking-wider">
             EXTERNAL THREAT INTELLIGENCE API CREDENTIALS
           </h3>
 
           <div className="space-y-4 max-w-xl">
-            <div>
-              <label className="text-slate-400 block mb-1">VirusTotal v3 API Secret Key</label>
+            <div className="space-y-1.5">
+              <label className="text-slate-400 block text-[11px] uppercase font-bold">
+                VirusTotal v3 API Secret Key
+              </label>
               <div className="relative">
                 <input
                   type={showVtKey ? 'text' : 'password'}
                   value={vtApiKey}
                   onChange={(e) => setVtApiKey(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 pr-10 text-slate-200 font-mono"
+                  className="w-full bg-slate-950 border border-white/10 rounded-lg p-2.5 pr-10 text-slate-200 font-mono text-xs focus:outline-none focus:border-emerald-500/60"
+                  placeholder="Enter VT API key..."
                 />
                 <button
                   type="button"
                   onClick={() => setShowVtKey(!showVtKey)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 cursor-pointer"
                 >
                   {showVtKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
             </div>
 
-            <div>
-              <label className="text-slate-400 block mb-1">AbuseIPDB v2 API Secret Key</label>
+            <div className="space-y-1.5">
+              <label className="text-slate-400 block text-[11px] uppercase font-bold">
+                AbuseIPDB v2 API Secret Key
+              </label>
               <div className="relative">
                 <input
                   type={showAbuseKey ? 'text' : 'password'}
                   value={abuseApiKey}
                   onChange={(e) => setAbuseApiKey(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 pr-10 text-slate-200 font-mono"
+                  className="w-full bg-slate-950 border border-white/10 rounded-lg p-2.5 pr-10 text-slate-200 font-mono text-xs focus:outline-none focus:border-emerald-500/60"
+                  placeholder="Enter AbuseIPDB API key..."
                 />
                 <button
                   type="button"
                   onClick={() => setShowAbuseKey(!showAbuseKey)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 cursor-pointer"
                 >
                   {showAbuseKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -493,7 +459,7 @@ export default function SettingsPage() {
           </div>
 
           <PermissionGuard requiredRole="ROLE_ADMIN">
-            <Button type="submit" variant="primary" leftIcon={<Save className="w-4 h-4" />}>
+            <Button type="submit" size="sm" variant="primary" leftIcon={<Save className="w-4 h-4" />}>
               Save API Keys
             </Button>
           </PermissionGuard>
@@ -502,33 +468,33 @@ export default function SettingsPage() {
 
       {/* Tab 5: Audit Logs */}
       {activeTab === 'AUDIT' && (
-        <div className="soc-card p-6 space-y-4 font-mono text-xs">
-          <h3 className="font-bold text-sm text-slate-100 border-b border-slate-800 pb-2">
+        <div className="soc-card p-5 md:p-6 space-y-4 text-xs">
+          <h3 className="font-bold text-sm text-slate-100 border-b border-white/[0.06] pb-2 uppercase tracking-wider">
             APPEND-ONLY CRYPTOGRAPHIC AUDIT TRAIL
           </h3>
 
-          <div className="space-y-3">
+          <div className="space-y-2 max-h-[440px] overflow-y-auto pr-1 custom-scrollbar">
             {auditLogs.length > 0 ? (
               auditLogs.map((log) => (
-                <div key={log.id} className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 flex flex-wrap items-center justify-between gap-2">
+                <div key={log.id} className="p-3 rounded-lg bg-slate-950/80 border border-white/[0.06] flex flex-wrap items-center justify-between gap-2">
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="font-bold text-emerald-400">{log.id}</span>
-                      <span className="text-slate-300 font-bold">{log.action || log.actionPerformed}</span>
+                      <span className="text-slate-200 font-bold">{log.action || log.actionPerformed}</span>
                     </div>
                     <div className="text-[10px] text-slate-400 mt-0.5">
-                      Target: {log.target || log.targetResource || 'eBPF NIC Filter'} | Actor: {log.actor || log.actorUser || 'Autonomous System'}
+                      Target: {log.target || log.targetResource || 'eBPF NIC Filter'} | Actor: {log.actor || log.actorUser || 'Autonomous Engine'}
                     </div>
                   </div>
 
                   <div className="text-right">
-                    <span className="text-[10px] text-slate-400 block font-mono">HASH: {log.hash || log.currentHash || 'SHA256-OK'}</span>
+                    <span className="text-[10px] text-slate-400 block">HASH: {log.hash || log.currentHash || 'SHA256-OK'}</span>
                     <span className="text-[10px] text-slate-500">{log.timestamp}</span>
                   </div>
                 </div>
               ))
             ) : (
-              <div className="p-8 text-center text-slate-400 text-xs bg-slate-950 rounded-xl border border-slate-800">
+              <div className="py-8 text-center text-slate-400 text-xs bg-slate-950/60 rounded-lg border border-white/10">
                 No audit log records found in database.
               </div>
             )}
@@ -538,9 +504,9 @@ export default function SettingsPage() {
 
       {/* Tab 6: Real System & Runtime Info */}
       {activeTab === 'SYSINFO' && (
-        <div className="soc-card p-6 space-y-6 font-mono text-xs">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-            <h3 className="font-bold text-sm text-slate-100 flex items-center gap-2">
+        <div className="soc-card p-5 md:p-6 space-y-5 text-xs">
+          <div className="flex items-center justify-between border-b border-white/[0.06] pb-2">
+            <h3 className="font-bold text-sm text-slate-100 flex items-center gap-2 uppercase tracking-wider">
               <Cpu className="w-4 h-4 text-emerald-400" /> REAL SYSTEM HARDWARE & RUNTIME TELEMETRY
             </h3>
             <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/30 font-bold">
@@ -549,52 +515,52 @@ export default function SettingsPage() {
           </div>
 
           {systemInfo ? (
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
-                  <span className="text-slate-400 text-[10px] uppercase block">HOST & OS NODE</span>
+            <div className="space-y-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                <div className="p-3.5 rounded-lg bg-slate-950/80 border border-white/[0.06] space-y-1">
+                  <span className="text-slate-400 text-[10px] uppercase block font-semibold">HOST & OS NODE</span>
                   <span className="text-slate-100 font-extrabold text-sm block">{systemInfo.hostname}</span>
                   <span className="text-slate-400 text-[11px] block">{systemInfo.osName} {systemInfo.osVersion} ({systemInfo.osArch})</span>
                 </div>
 
-                <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
-                  <span className="text-slate-400 text-[10px] uppercase block">CPU PROCESSOR CORES</span>
+                <div className="p-3.5 rounded-lg bg-slate-950/80 border border-white/[0.06] space-y-1">
+                  <span className="text-slate-400 text-[10px] uppercase block font-semibold">CPU PROCESSOR CORES</span>
                   <span className="text-emerald-400 font-extrabold text-sm block">{systemInfo.availableProcessors} Logical Cores</span>
-                  <span className="text-slate-400 text-[11px] block">System Load Average: {systemInfo.systemLoadAverage}</span>
+                  <span className="text-slate-400 text-[11px] block">System Load Avg: {systemInfo.systemLoadAverage}</span>
                 </div>
 
-                <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
-                  <span className="text-slate-400 text-[10px] uppercase block">JVM HEAP MEMORY POOL</span>
-                  <span className="text-cyan-400 font-extrabold text-sm block">{systemInfo.ramUsedMb} MB / {systemInfo.ramTotalMb} MB</span>
-                  <span className="text-slate-400 text-[11px] block">Allocated Heap Usage: {systemInfo.ramUsedPct}%</span>
+                <div className="p-3.5 rounded-lg bg-slate-950/80 border border-white/[0.06] space-y-1">
+                  <span className="text-slate-400 text-[10px] uppercase block font-semibold">JVM HEAP MEMORY POOL</span>
+                  <span className="text-cyan-300 font-extrabold text-sm block">{systemInfo.ramUsedMb} MB / {systemInfo.ramTotalMb} MB</span>
+                  <span className="text-slate-400 text-[11px] block">Heap Usage: {systemInfo.ramUsedPct}%</span>
                 </div>
 
-                <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
-                  <span className="text-slate-400 text-[10px] uppercase block">ROOT DISK STORAGE</span>
+                <div className="p-3.5 rounded-lg bg-slate-950/80 border border-white/[0.06] space-y-1">
+                  <span className="text-slate-400 text-[10px] uppercase block font-semibold">ROOT DISK STORAGE</span>
                   <span className="text-emerald-400 font-extrabold text-sm block">{systemInfo.diskUsedGb} GB / {systemInfo.diskTotalGb} GB</span>
-                  <span className="text-slate-400 text-[11px] block">Filesystem Disk Usage: {systemInfo.diskUsedPct}%</span>
+                  <span className="text-slate-400 text-[11px] block">Disk Usage: {systemInfo.diskUsedPct}%</span>
                 </div>
 
-                <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
-                  <span className="text-slate-400 text-[10px] uppercase block">JAVA & SPRING BOOT STACK</span>
+                <div className="p-3.5 rounded-lg bg-slate-950/80 border border-white/[0.06] space-y-1">
+                  <span className="text-slate-400 text-[10px] uppercase block font-semibold">JAVA & SPRING BOOT</span>
                   <span className="text-amber-400 font-extrabold text-sm block">Java {systemInfo.javaVersion}</span>
-                  <span className="text-slate-400 text-[11px] block">Spring Boot v{systemInfo.springBootVersion} ({systemInfo.javaVendor})</span>
+                  <span className="text-slate-400 text-[11px] block">Spring Boot v{systemInfo.springBootVersion}</span>
                 </div>
 
-                <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-1">
-                  <span className="text-slate-400 text-[10px] uppercase block">RUNTIME ISOLATION</span>
-                  <StatusBadge status="HEALTHY" size="sm" labelOverride={systemInfo.containerized ? 'DOCKER CONTAINER' : 'BARE METAL / HOST'} />
-                  <span className="text-slate-400 text-[11px] block mt-1">JVM Uptime: {Math.round((systemInfo.jvmUptimeMs || 0) / 1000)} seconds</span>
+                <div className="p-3.5 rounded-lg bg-slate-950/80 border border-white/[0.06] space-y-1">
+                  <span className="text-slate-400 text-[10px] uppercase block font-semibold">RUNTIME ISOLATION</span>
+                  <StatusBadge status="HEALTHY" size="xs" labelOverride={systemInfo.containerized ? 'DOCKER CONTAINER' : 'BARE METAL / HOST'} />
+                  <span className="text-slate-400 text-[11px] block mt-1">JVM Uptime: {Math.round((systemInfo.jvmUptimeMs || 0) / 1000)}s</span>
                 </div>
               </div>
 
-              <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 text-[11px] text-slate-400 space-y-1">
+              <div className="p-3 rounded-lg bg-slate-950 border border-white/[0.06] text-[11px] text-slate-400 space-y-1">
                 <p>• Data queried dynamically from live Java OperatingSystemMXBean and Runtime environment APIs.</p>
                 <p>• Authenticated and read-only. Environment secrets and credentials are not exposed.</p>
               </div>
             </div>
           ) : (
-            <div className="p-8 text-center text-slate-400 text-xs bg-slate-950 rounded-xl border border-slate-800">
+            <div className="py-8 text-center text-slate-400 text-xs bg-slate-950/60 rounded-lg border border-white/10">
               Querying backend system information endpoint...
             </div>
           )}
@@ -603,4 +569,3 @@ export default function SettingsPage() {
     </div>
   );
 }
-

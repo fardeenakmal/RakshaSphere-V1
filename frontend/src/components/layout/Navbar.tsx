@@ -8,7 +8,8 @@ import {
   LogOut,
   Radio,
   Clock,
-  Menu
+  Menu,
+  ChevronRight
 } from 'lucide-react';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useUIStore } from '@/store/useUIStore';
@@ -37,10 +38,10 @@ export const Navbar: React.FC = () => {
   const getPageTitle = (path: string) => {
     switch (path) {
       case '/dashboard': return 'Command Center Overview';
-      case '/alerts': return 'Threat Triage Feed';
-      case '/honeypots': return 'Deception Honeypots';
+      case '/alerts': return 'Threat Triage Workspace';
+      case '/honeypots': return 'Adaptive Honeypots';
       case '/mitre': return 'MITRE ATT&CK Matrix';
-      case '/system-health': return 'System Health Diagnostics';
+      case '/system-health': return 'Subsystem Diagnostics';
       case '/settings': return 'Settings & Governance';
       default: return 'SOC Console';
     }
@@ -52,92 +53,86 @@ export const Navbar: React.FC = () => {
   };
 
   return (
-    <header className="h-16 border-b border-white/5 bg-slate-950/80 backdrop-blur-xl sticky top-0 z-30 px-3 md:px-6 flex items-center justify-between shadow-[0_4px_24px_rgba(0,0,0,0.15)] min-w-0 select-none">
-      {/* Left side: Mobile Toggle & Page Context Title */}
-      <div className="flex items-center gap-2.5 min-w-0 flex-1 mr-2">
+    <header className="h-14 border-b border-white/[0.06] bg-[#070b14]/90 backdrop-blur-md sticky top-0 z-30 flex items-center shadow-sm select-none overflow-hidden">
+      {/* Left side: Mobile Toggle & Page Breadcrumb — fills remaining space */}
+      <div className="flex items-center gap-2 min-w-0 flex-1 px-3 md:px-5">
         <button
           onClick={toggleSidebar}
-          className="md:hidden p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/80 transition shrink-0 cursor-pointer"
+          className="md:hidden p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition shrink-0 cursor-pointer"
           aria-label="Toggle Navigation Sidebar"
         >
           <Menu className="w-5 h-5" />
         </button>
 
-        <div className="flex flex-col min-w-0 shrink">
-          <span className="text-[9px] font-mono text-slate-400 uppercase tracking-widest truncate hidden sm:block">
-            RakshaSphere Platform
+        <div className="flex items-center gap-1.5 min-w-0 text-xs font-mono">
+          <span className="text-slate-500 uppercase tracking-wider hidden lg:inline shrink-0">
+            RAKSHA
           </span>
-          <span className="font-extrabold text-xs md:text-sm text-slate-100 font-mono tracking-tight truncate">
+          <ChevronRight className="w-3.5 h-3.5 text-slate-600 hidden lg:inline shrink-0" />
+          <span className="font-bold text-slate-100 tracking-tight truncate text-xs md:text-sm">
             {getPageTitle(pathname)}
           </span>
         </div>
 
-        {/* Global Search Box (Shrinks dynamically on tighter viewports) */}
-        <div className="relative w-32 sm:w-44 md:w-56 lg:w-64 hidden sm:block shrink min-w-[90px]">
+        {/* Global Search Box */}
+        <div className="relative hidden sm:block shrink-0 ml-3" style={{ width: 'clamp(100px, 14vw, 220px)' }}>
           <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search IP, Attack..."
-            className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-8 pr-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30 transition shadow-inner font-mono truncate"
+            placeholder="Search IP, vector, ID..."
+            className="w-full bg-slate-950/80 border border-white/10 rounded-lg pl-8 pr-3 py-1 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500/60 focus:ring-1 focus:ring-emerald-500/30 transition font-mono"
           />
         </div>
       </div>
 
-      {/* Right side: System Status, Live STOMP Stream, Clock, Role Switcher, Profile */}
-      <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
-        {/* Priority 1: System Status Indicator */}
+      {/* Right side: fixed shrink-0 controls */}
+      <div className="flex items-center gap-1.5 shrink-0 font-mono text-xs pr-3 md:pr-5">
+        {/* System Status */}
         <SystemStatusHeader />
 
-        {/* Priority 2: Real-time WebSocket toggle pill */}
+        {/* Live STOMP Stream toggle */}
         <button
           onClick={toggleLiveFeed}
-          className={`hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-mono border transition-all cursor-pointer ${
+          className={`hidden md:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border transition-colors cursor-pointer text-[11px] ${
             isLiveFeedActive
-              ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/20'
-              : 'bg-amber-500/10 text-amber-400 border-amber-500/30 hover:bg-amber-500/20'
+              ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/15'
+              : 'bg-amber-500/10 text-amber-300 border-amber-500/30 hover:bg-amber-500/15'
           }`}
           title="Toggle WebSocket Live Telemetry Stream"
         >
-          <Radio className={`w-3.5 h-3.5 ${isLiveFeedActive ? 'animate-pulse text-emerald-400' : ''}`} />
+          <Radio className={`w-3.5 h-3.5 ${isLiveFeedActive ? 'text-emerald-400' : 'text-amber-400'}`} />
           <span className="font-bold">{isLiveFeedActive ? 'LIVE' : 'PAUSED'}</span>
         </button>
 
-        {/* Priority 3: Live UTC Clock */}
-        <div className="hidden xl:flex items-center gap-1.5 text-xs font-mono text-slate-400 bg-slate-900 px-2.5 py-1.5 rounded-xl border border-slate-800">
-          <Clock className="w-3.5 h-3.5 text-cyan-400" />
-          <span className="tabular-nums">{currentTime || '16:55:00'} UTC</span>
+        {/* UTC Clock — only on very wide screens */}
+        <div className="hidden 2xl:flex items-center gap-1.5 text-[11px] text-slate-400 bg-slate-950 px-2.5 py-1.5 rounded-lg border border-white/10">
+          <Clock className="w-3 h-3 text-cyan-400 shrink-0" />
+          <span className="tabular-nums">{currentTime || '00:00:00'} UTC</span>
         </div>
 
-        {/* Priority 4: Role Display Badge */}
-        <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-xs font-mono text-slate-200">
-          <Shield className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-          <span className="font-bold text-emerald-400">
-            {currentUser?.username || 'User'} ({currentUser?.role === 'ROLE_ADMIN' ? 'ADMIN' : currentUser?.role === 'ROLE_SOC_ANALYST' ? 'ANALYST' : 'OBSERVER'})
+        {/* Role Badge */}
+        <div className="hidden md:flex items-center gap-1.5 px-2 py-1.5 rounded-lg bg-slate-950 border border-white/10 text-[11px] max-w-[140px]">
+          <Shield className="w-3 h-3 text-emerald-400 shrink-0" />
+          <span className="text-slate-300 truncate">
+            {currentUser?.username || 'User'}
+          </span>
+          <span className="text-emerald-400 font-bold text-[10px] border-l border-white/10 pl-1.5 shrink-0">
+            {currentUser?.role === 'ROLE_ADMIN' ? 'ADMIN' : currentUser?.role === 'ROLE_SOC_ANALYST' ? 'ANALYST' : 'VIEW ONLY'}
           </span>
         </div>
 
-        {/* Priority 0: User Avatar & Logout */}
-        <div className="flex items-center gap-1.5 pl-1.5 border-l border-slate-800/80">
-          <img
-            src={currentUser?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'}
-            alt={currentUser?.name || 'User'}
-            className="w-7 h-7 rounded-full border border-emerald-500/40 object-cover shrink-0"
-            title={`${currentUser?.name || 'User'} (${currentUser?.role || 'ROLE_ADMIN'})`}
-          />
-
-          <button
-            onClick={handleLogout}
-            className="p-1.5 rounded-xl text-slate-400 hover:text-red-400 hover:bg-slate-800 transition cursor-pointer"
-            title="Sign Out"
-          >
-            <LogOut className="w-4 h-4" />
-          </button>
-        </div>
+        {/* Sign Out */}
+        <button
+          onClick={handleLogout}
+          className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-slate-800 transition cursor-pointer border border-white/10"
+          title="Sign Out"
+          aria-label="Sign Out"
+        >
+          <LogOut className="w-3.5 h-3.5" />
+        </button>
       </div>
     </header>
   );
 };
-
-

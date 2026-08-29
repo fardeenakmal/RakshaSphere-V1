@@ -40,23 +40,19 @@ export const useAlertStore = create<AlertState>((set, get) => ({
     set({ isLoading: true });
     try {
       const data = await apiService.getAlerts();
-      if (Array.isArray(data) && data.length > 0) {
+      if (Array.isArray(data)) {
         set({ alerts: data, isLoading: false });
       } else {
-        set({ isLoading: false });
+        set({ alerts: [], isLoading: false });
       }
     } catch (err) {
       console.warn('Backend alerts endpoint unreachable:', err);
-      set({ isLoading: false });
+      set({ alerts: [], isLoading: false });
     }
   },
 
   containAlert: async (alertId, actionName = 'eBPF / XDP Instant Drop Rule Injected') => {
-    try {
-      await apiService.remediateAlert(alertId, 'eBPF_DROP');
-    } catch (e) {
-      console.warn('API remediation trigger failed, executing optimistic local update:', e);
-    }
+    await apiService.remediateAlert(alertId, 'eBPF_DROP');
     
     set((state) => ({
       alerts: state.alerts.map((a) =>
@@ -80,11 +76,7 @@ export const useAlertStore = create<AlertState>((set, get) => ({
   },
 
   divertToHoneypot: async (alertId) => {
-    try {
-      await apiService.remediateAlert(alertId, 'HONEYPOT');
-    } catch (e) {
-      console.warn('API honeypot diversion failed, executing optimistic local update:', e);
-    }
+    await apiService.remediateAlert(alertId, 'HONEYPOT');
 
     set((state) => ({
       alerts: state.alerts.map((a) =>
@@ -130,11 +122,7 @@ export const useAlertStore = create<AlertState>((set, get) => ({
   },
 
   revertAction: async (alertId) => {
-    try {
-      await apiService.remediateAlert(alertId, 'REVERT');
-    } catch (e) {
-      console.warn('API revert action failed, executing optimistic local update:', e);
-    }
+    await apiService.remediateAlert(alertId, 'REVERT');
 
     set((state) => ({
       alerts: state.alerts.map((a) =>

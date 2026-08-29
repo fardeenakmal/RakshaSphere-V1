@@ -452,13 +452,14 @@ public class SystemHealthService {
         HealthComponent comp = components.get("eBpfSubsystem");
         Map<String, Object> details = getDetails(comp);
         String status = mapStatus(comp);
+        Long latencyMs = details.containsKey("latencyMs") ? ((Number) details.get("latencyMs")).longValue() : null;
 
         return ServiceHealthDetail.builder()
                 .id("ebpf")
                 .name("eBPF Kernel XDP Defense Module")
                 .category("Kernel Security")
                 .status(status)
-                .latencyMs(null) // Phase 14: Return null for JNI prototype status check
+                .latencyMs(latencyMs)
                 .lastChecked(now.toString())
                 .details(details)
                 .build();

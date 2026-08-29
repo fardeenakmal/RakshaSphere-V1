@@ -12,9 +12,12 @@ import {
   Mail,
   User,
   Lock,
-  FileText
+  FileText,
+  ShieldCheck
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import { Select } from '@/components/ui/Select';
 
 export default function RequestAccessPage() {
   const router = useRouter();
@@ -63,49 +66,55 @@ export default function RequestAccessPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#070a11] text-slate-100 flex items-center justify-center p-4 relative overflow-hidden font-sans">
-      {/* Background Cyber Grid Backdrop */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#0f172a15_1px,transparent_1px),linear-gradient(to_bottom,#0f172a15_1px,transparent_1px)] bg-[size:4rem_4rem] pointer-events-none" />
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-emerald-500/10 rounded-full blur-[140px] pointer-events-none" />
+    <div className="min-h-screen bg-[#030712] text-slate-100 flex items-center justify-center p-4 md:p-8 relative overflow-hidden font-sans select-none">
+      {/* Background Architectural Grid Pattern */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:3rem_3rem] pointer-events-none" />
 
       {/* Main Request Form Container */}
-      <div className="relative z-10 w-full max-w-lg soc-card p-8 shadow-2xl backdrop-blur-2xl my-8">
-        <Link href="/login" className="inline-flex items-center gap-1.5 text-xs font-mono text-slate-400 hover:text-emerald-400 mb-6 transition">
-          <ArrowLeft className="w-4 h-4" /> Back to Console Login
+      <div className="relative z-10 w-full max-w-xl rounded-2xl border border-white/[0.08] bg-[#070b14]/95 p-6 md:p-8 shadow-2xl backdrop-blur-xl">
+        <Link
+          href="/login"
+          className="inline-flex items-center gap-1.5 text-xs font-mono text-slate-400 hover:text-emerald-400 mb-5 transition"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" /> Back to Console Login
         </Link>
 
         {/* Header Branding */}
-        <div className="text-center space-y-2 mb-6">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 shadow-xl shadow-emerald-500/10 mb-1">
-            <UserPlus className="w-6 h-6 animate-pulse" />
+        <div className="space-y-1.5 pb-4 border-b border-white/[0.06] mb-5">
+          <div className="flex items-center gap-3">
+            <div className="inline-flex items-center justify-center w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 shadow-sm">
+              <UserPlus className="w-5 h-5" />
+            </div>
+            <div>
+              <h1 className="text-lg font-bold tracking-tight text-slate-100 font-mono">
+                REQUEST SOC OPERATIONAL ACCESS
+              </h1>
+              <p className="text-xs font-mono text-slate-400">
+                Submit credentials for administrator RBAC approval
+              </p>
+            </div>
           </div>
-          <h1 className="text-xl font-extrabold tracking-tight text-slate-100">
-            REQUEST ENTERPRISE SOC ACCESS
-          </h1>
-          <p className="text-xs font-mono text-slate-400">
-            Submit credentials for administrator review and RBAC role provision
-          </p>
         </div>
 
         {/* Status Alerts */}
         {successMsg && (
-          <div className="mb-6 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-mono space-y-2">
+          <div className="mb-6 p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-mono space-y-3">
             <div className="flex items-center gap-2 font-bold">
-              <CheckCircle2 className="w-5 h-5 shrink-0" />
-              <span>REQUEST SUBMITTED FOR REVIEW</span>
+              <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
+              <span>REQUEST SUBMITTED FOR APPROVAL</span>
             </div>
-            <p className="text-slate-300">{successMsg}</p>
-            <div className="pt-2">
+            <p className="text-slate-300 text-[11px] leading-relaxed">{successMsg}</p>
+            <div>
               <Button size="sm" variant="primary" onClick={() => router.push('/login')}>
-                Return to Login Page
+                Return to Sign In
               </Button>
             </div>
           </div>
         )}
 
         {errorMsg && (
-          <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-mono flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 shrink-0" />
+          <div className="mb-4 p-3 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs font-mono flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 shrink-0 text-rose-400" />
             <span>{errorMsg}</span>
           </div>
         )}
@@ -113,122 +122,94 @@ export default function RequestAccessPage() {
         {!successMsg && (
           <form onSubmit={handleSubmit} className="space-y-4 font-mono text-xs">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="text-slate-400 block mb-1">Full Name</label>
-                <div className="relative">
-                  <User className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-                  <input
-                    type="text"
-                    required
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="Alex Morgan"
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-slate-200"
-                  />
-                </div>
-              </div>
+              <Input
+                label="Full Name"
+                leftIcon={<User className="w-3.5 h-3.5" />}
+                type="text"
+                required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Alex Morgan"
+              />
 
-              <div>
-                <label className="text-slate-400 block mb-1">Corporate Email</label>
-                <div className="relative">
-                  <Mail className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-                  <input
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="alex@enterprise.com"
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-slate-200"
-                  />
-                </div>
-              </div>
+              <Input
+                label="Corporate Email"
+                leftIcon={<Mail className="w-3.5 h-3.5" />}
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="alex@enterprise.com"
+              />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="text-slate-400 block mb-1">Organization / Dept</label>
-                <div className="relative">
-                  <Building className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-                  <input
-                    type="text"
-                    required
-                    value={org}
-                    onChange={(e) => setOrg(e.target.value)}
-                    placeholder="Cyber Operations"
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-slate-200"
-                  />
-                </div>
-              </div>
+              <Input
+                label="Department / Org"
+                leftIcon={<Building className="w-3.5 h-3.5" />}
+                type="text"
+                required
+                value={org}
+                onChange={(e) => setOrg(e.target.value)}
+                placeholder="Cyber Operations Center"
+              />
 
-              <div>
-                <label className="text-slate-400 block mb-1">Requested Role</label>
-                <select
-                  value={requestedRole}
-                  onChange={(e) => setRequestedRole(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-200 font-mono font-bold focus:outline-none"
-                >
-                  <option value="ROLE_SOC_ANALYST">ROLE_SOC_ANALYST (Tier-2 Analyst)</option>
-                  <option value="ROLE_USER">ROLE_USER (Observer Read-Only)</option>
-                  <option value="ROLE_ADMIN">ROLE_ADMIN (Super Administrator)</option>
-                </select>
-              </div>
+              <Select
+                label="Requested Role"
+                value={requestedRole}
+                onChange={(e) => setRequestedRole(e.target.value)}
+                options={[
+                  { value: 'ROLE_SOC_ANALYST', label: 'ROLE_SOC_ANALYST (Triage)' },
+                  { value: 'ROLE_USER', label: 'ROLE_USER (Observer)' },
+                  { value: 'ROLE_ADMIN', label: 'ROLE_ADMIN (Administrator)' },
+                ]}
+              />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="text-slate-400 block mb-1">Account Password</label>
-                <div className="relative">
-                  <Lock className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-                  <input
-                    type="password"
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••••••"
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-slate-200"
-                  />
-                </div>
-              </div>
+              <Input
+                label="Password"
+                leftIcon={<Lock className="w-3.5 h-3.5" />}
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••••••"
+              />
 
-              <div>
-                <label className="text-slate-400 block mb-1">Confirm Password</label>
-                <div className="relative">
-                  <Lock className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-                  <input
-                    type="password"
-                    required
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="••••••••••••"
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-slate-200"
-                  />
-                </div>
-              </div>
+              <Input
+                label="Confirm Password"
+                leftIcon={<Lock className="w-3.5 h-3.5" />}
+                type="password"
+                required
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="••••••••••••"
+              />
             </div>
 
-            <div>
-              <label className="text-slate-400 block mb-1">Reason for Access</label>
-              <div className="relative">
-                <FileText className="w-4 h-4 absolute left-3 top-3 text-slate-500" />
-                <textarea
-                  rows={2}
-                  required
-                  value={reason}
-                  onChange={(e) => setReason(e.target.value)}
-                  placeholder="Provide brief justification for SOC portal access..."
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-slate-200"
-                />
-              </div>
+            <div className="space-y-1.5">
+              <label className="block text-[11px] font-semibold text-slate-300 uppercase tracking-wider">
+                Justification for Access
+              </label>
+              <textarea
+                rows={2}
+                required
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                placeholder="Specify incident triage responsibilities or reason for SOC console access..."
+                className="w-full bg-slate-950/90 text-slate-100 placeholder-slate-500 border border-white/10 rounded-lg p-2.5 text-xs font-mono focus:outline-none focus:border-emerald-500/60 focus:ring-1 focus:ring-emerald-500/30"
+              />
             </div>
 
-            <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-[11px] text-slate-400 space-y-1">
-              <p>• Lifecycle status: <strong className="text-amber-400">PENDING APPROVAL</strong></p>
-              <p>• Super Admin will review organization credentials before account activation.</p>
+            <div className="p-3 rounded-lg bg-slate-950/80 border border-white/[0.06] text-[11px] text-slate-400 space-y-1">
+              <p>• Account status will be initialized to: <strong className="text-amber-400">PENDING APPROVAL</strong></p>
+              <p>• Designated SOC Administrator must approve identity before token issuance.</p>
             </div>
 
             <Button
               type="submit"
-              size="lg"
+              size="md"
               variant="primary"
               className="w-full mt-2"
               disabled={isLoading}

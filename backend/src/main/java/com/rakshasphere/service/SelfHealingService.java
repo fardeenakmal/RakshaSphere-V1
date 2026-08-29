@@ -40,7 +40,7 @@ public class SelfHealingService {
                 System.err.println("Failed to inject eBPF drop rule via native JNI driver.");
             }
         } catch (UnsatisfiedLinkError e) {
-            System.err.println("Native JNI library not loaded, skipping actual eBPF drop execution. Mock success.");
+            System.err.println("Native JNI library not loaded, skipping native driver execution.");
         }
 
         // Record Cryptographic Audit Log

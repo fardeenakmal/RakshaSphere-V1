@@ -91,7 +91,7 @@ public class HoneypotOrchestratorService {
             default -> 9000;
         };
 
-        String sessionId = "HP-" + service.toUpperCase() + "-" + (int) (Math.random() * 90 + 10);
+        String sessionId = "HP-" + service.toUpperCase() + "-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase();
         String containerId = "pending";
 
         // Try to deploy via Honeypot Manager
@@ -118,10 +118,12 @@ public class HoneypotOrchestratorService {
                 Map responseBody = response.getBody();
                 containerId = (String) responseBody.getOrDefault("container_id", "unknown");
                 logger.info("Honeypot deployed via Manager: {} → container {}", sessionId, containerId);
+            } else {
+                throw new IllegalStateException("Honeypot Manager returned status: " + response.getStatusCode());
             }
         } catch (Exception e) {
-            logger.warn("Honeypot Manager unreachable, creating DB-only session: {}", e.getMessage());
-            containerId = "simulation-" + Long.toHexString(System.currentTimeMillis()).substring(0, 8);
+            logger.error("Honeypot Manager unreachable or deployment failed: {}", e.getMessage());
+            throw new IllegalStateException("Honeypot deployment failed: Honeypot sidecar / Docker is unavailable (" + e.getMessage() + ")");
         }
 
         HoneypotSession newSession = HoneypotSession.builder()

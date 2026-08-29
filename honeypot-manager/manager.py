@@ -348,7 +348,7 @@ async def deploy_honeypot(
                     os.chown(p, id_val, id_val)
             except Exception:
                 pass
-        os.chmod(container_log_dir, 0o775)
+        os.chmod(container_log_dir, 0o777)
     except Exception as e:
         logger.warning(f"Could not set ownership/permissions on {container_log_dir}: {e}")
 

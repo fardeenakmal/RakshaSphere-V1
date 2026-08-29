@@ -30,8 +30,9 @@ export type StatusVariant =
 
 interface StatusBadgeProps {
   status: StatusVariant | string;
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'xs' | 'sm' | 'md' | 'lg';
   showIcon?: boolean;
+  showDot?: boolean;
   labelOverride?: string;
   title?: string;
   className?: string;
@@ -41,6 +42,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
   status,
   size = 'md',
   showIcon = true,
+  showDot = true,
   labelOverride,
   title,
   className = ''
@@ -48,13 +50,14 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
   const normStatus = (status || '').toUpperCase();
 
   const sizeStyles = {
-    sm: 'px-2 py-0.5 text-[10px] gap-1 rounded',
-    md: 'px-2.5 py-1 text-xs gap-1.5 rounded-lg',
-    lg: 'px-3 py-1.5 text-xs gap-2 rounded-xl font-bold',
+    xs: 'px-1.5 py-0.5 text-[10px] gap-1 rounded',
+    sm: 'px-2 py-0.5 text-[11px] gap-1.5 rounded-md font-semibold',
+    md: 'px-2.5 py-1 text-xs gap-1.5 rounded-lg font-semibold',
+    lg: 'px-3 py-1.5 text-xs gap-2 rounded-lg font-bold',
   };
 
   let styleConfig = {
-    bg: 'bg-slate-800/80 text-slate-300 border-slate-700',
+    bg: 'bg-slate-900 text-slate-300 border-white/10',
     dot: 'bg-slate-400',
     icon: Info,
     label: normStatus
@@ -63,8 +66,8 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
   switch (normStatus) {
     case 'CRITICAL':
       styleConfig = {
-        bg: 'bg-red-500/10 text-red-400 border-red-500/30 shadow-[0_0_10px_rgba(239,68,68,0.15)]',
-        dot: 'bg-red-500 animate-pulse',
+        bg: 'bg-rose-500/15 text-rose-300 border-rose-500/30',
+        dot: 'bg-rose-400 animate-pulse',
         icon: ShieldAlert,
         label: 'CRITICAL'
       };
@@ -72,7 +75,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
 
     case 'HIGH':
       styleConfig = {
-        bg: 'bg-amber-500/10 text-amber-400 border-amber-500/30 shadow-[0_0_10px_rgba(245,158,11,0.15)]',
+        bg: 'bg-amber-500/15 text-amber-300 border-amber-500/30',
         dot: 'bg-amber-400',
         icon: AlertTriangle,
         label: 'HIGH'
@@ -81,8 +84,8 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
 
     case 'MEDIUM':
       styleConfig = {
-        bg: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30',
-        dot: 'bg-cyan-400',
+        bg: 'bg-yellow-500/15 text-yellow-300 border-yellow-500/30',
+        dot: 'bg-yellow-400',
         icon: Info,
         label: 'MEDIUM'
       };
@@ -90,8 +93,8 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
 
     case 'LOW':
       styleConfig = {
-        bg: 'bg-slate-800 text-slate-400 border-slate-700',
-        dot: 'bg-slate-400',
+        bg: 'bg-sky-500/15 text-sky-300 border-sky-500/30',
+        dot: 'bg-sky-400',
         icon: Info,
         label: 'LOW'
       };
@@ -99,8 +102,8 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
 
     case 'HEALTHY':
       styleConfig = {
-        bg: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30 shadow-[0_0_10px_rgba(16,185,129,0.15)]',
-        dot: 'bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.8)]',
+        bg: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
+        dot: 'bg-emerald-400',
         icon: CheckCircle2,
         label: 'HEALTHY'
       };
@@ -108,8 +111,8 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
 
     case 'DEGRADED':
       styleConfig = {
-        bg: 'bg-amber-500/10 text-amber-400 border-amber-500/30 shadow-[0_0_10px_rgba(245,158,11,0.15)]',
-        dot: 'bg-amber-400 shadow-[0_0_6px_rgba(251,191,36,0.8)]',
+        bg: 'bg-amber-500/15 text-amber-300 border-amber-500/30',
+        dot: 'bg-amber-400',
         icon: AlertTriangle,
         label: 'DEGRADED'
       };
@@ -117,8 +120,8 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
 
     case 'DOWN':
       styleConfig = {
-        bg: 'bg-red-500/10 text-red-400 border-red-500/30 shadow-[0_0_10px_rgba(239,68,68,0.2)]',
-        dot: 'bg-red-500 shadow-[0_0_6px_rgba(239,68,68,0.8)] animate-pulse',
+        bg: 'bg-rose-500/15 text-rose-300 border-rose-500/30',
+        dot: 'bg-rose-400 animate-pulse',
         icon: XCircle,
         label: 'DOWN'
       };
@@ -126,8 +129,8 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
 
     case 'SIMULATED':
       styleConfig = {
-        bg: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30 shadow-[0_0_10px_rgba(6,182,212,0.15)]',
-        dot: 'bg-cyan-400 shadow-[0_0_6px_rgba(34,211,238,0.8)]',
+        bg: 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30',
+        dot: 'bg-cyan-400',
         icon: Activity,
         label: 'SIMULATED'
       };
@@ -136,7 +139,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
     case 'NOT_DEPLOYED':
     case 'NOT DEPLOYED':
       styleConfig = {
-        bg: 'bg-slate-800 text-slate-400 border-slate-700',
+        bg: 'bg-slate-900 text-slate-400 border-white/10',
         dot: 'bg-slate-500',
         icon: Info,
         label: 'NOT DEPLOYED'
@@ -145,8 +148,8 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
 
     case 'ACTIVE':
       styleConfig = {
-        bg: 'bg-red-500/10 text-red-400 border-red-500/30 animate-pulse',
-        dot: 'bg-red-500',
+        bg: 'bg-rose-500/15 text-rose-300 border-rose-500/30',
+        dot: 'bg-rose-400 animate-pulse',
         icon: Zap,
         label: 'ACTIVE THREAT'
       };
@@ -154,7 +157,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
 
     case 'CONTAINED':
       styleConfig = {
-        bg: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
+        bg: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
         dot: 'bg-emerald-400',
         icon: ShieldCheck,
         label: 'CONTAINED (eBPF)'
@@ -163,7 +166,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
 
     case 'HONEYPOT_DIVERTED':
       styleConfig = {
-        bg: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
+        bg: 'bg-amber-500/15 text-amber-300 border-amber-500/30',
         dot: 'bg-amber-400',
         icon: Bug,
         label: 'HONEYPOT TRAPPED'
@@ -172,7 +175,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
 
     case 'RESOLVED':
       styleConfig = {
-        bg: 'bg-slate-800/90 text-slate-400 border-slate-700',
+        bg: 'bg-slate-900 text-slate-300 border-white/10',
         dot: 'bg-slate-500',
         icon: CheckCircle2,
         label: 'RESOLVED'
@@ -185,9 +188,12 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
 
   return (
     <span
-      className={`inline-flex items-center font-mono font-bold border transition-all ${sizeStyles[size]} ${styleConfig.bg} ${className}`}
+      className={`inline-flex items-center font-mono border transition-colors select-none ${sizeStyles[size]} ${styleConfig.bg} ${className}`}
       title={title || (normStatus === 'SIMULATED' ? 'JNI Prototype Simulation — native kernel/hardware component not active.' : undefined)}
     >
+      {showDot && (
+        <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${styleConfig.dot}`} />
+      )}
       {showIcon && <IconComponent className="w-3.5 h-3.5 shrink-0" />}
       <span className="truncate">{labelText}</span>
     </span>

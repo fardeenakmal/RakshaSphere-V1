@@ -16,7 +16,7 @@ public class AiEngineHealthIndicator implements HealthIndicator {
 
     private static final Logger log = LoggerFactory.getLogger(AiEngineHealthIndicator.class);
 
-    @Value("${rakshasphere.ai.url:${RAKSHASPHERE_AI_URL:${AI_ENGINE_URL:https://rakshasphere-v1-1.onrender.com}}}")
+    @Value("${rakshasphere.ai.url:${RAKSHASPHERE_AI_URL:${AI_ENGINE_URL:http://localhost:5000}}}")
     private String aiEngineUrl;
 
     private final RestTemplate restTemplate;
@@ -37,7 +37,7 @@ public class AiEngineHealthIndicator implements HealthIndicator {
                     .replaceAll("/health$", "")
                     .replaceAll("/predict$", "");
             if (cleanUrl.isBlank()) {
-                cleanUrl = "https://rakshasphere-v1-1.onrender.com";
+                cleanUrl = "http://localhost:5000";
             }
 
             String healthUrl = cleanUrl + "/health";
